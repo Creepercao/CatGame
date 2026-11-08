@@ -1,0 +1,64 @@
+{
+  "width": 512,
+  "height": 288,
+  "cell": 64,
+  "view": "existing-two-wall-corner",
+  "layers": [
+    {
+      "name": "Architecture",
+      "floor": "floor",
+      "wall": "wall_plain",
+      "corner": [
+        256,
+        40
+      ],
+      "wall_slope": 0.36,
+      "left_remap": {
+        "#F1DDC4": "#D0B49C",
+        "#D0B49C": "#C39A72",
+        "#FFF0D1": "#F1DDC4"
+      },
+      "molding": [
+        "#94735C",
+        "#C39A72",
+        "#E3BE92",
+        "#E3BE92"
+      ]
+    },
+    {
+      "name": "BackWallFurniture",
+      "placements": [
+        {
+          "asset": "bookshelf_upper",
+          "x": 112,
+          "y": -2
+        },
+        {
+          "asset": "bookshelf_lower",
+          "x": 112,
+          "y": 62
+        },
+        {
+          "asset": "plant",
+          "x": 184,
+          "y": 10
+        },
+        {
+          "asset": "cat_bed",
+          "x": 252,
+          "y": 10
+        },
+        {
+          "asset": "window",
+          "x": 352,
+          "y": -3
+        },
+        {
+          "asset": "scratching_post",
+          "x": 452,
+          "y": 64
+        }
+      ]
+    }
+  ]
+}

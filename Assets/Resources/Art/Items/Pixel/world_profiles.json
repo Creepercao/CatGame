@@ -1,0 +1,144 @@
+{
+  "profiles": [
+    {
+      "id": "item_1_1",
+      "width": 47,
+      "height": 33,
+      "centerX": 32.5,
+      "bottom": 5
+    },
+    {
+      "id": "item_1_2",
+      "width": 53,
+      "height": 33,
+      "centerX": 32.5,
+      "bottom": 5
+    },
+    {
+      "id": "item_1_3",
+      "width": 43,
+      "height": 45,
+      "centerX": 34.5,
+      "bottom": 4
+    },
+    {
+      "id": "item_1_4",
+      "width": 44,
+      "height": 40,
+      "centerX": 33.0,
+      "bottom": 7
+    },
+    {
+      "id": "item_2_1",
+      "width": 47,
+      "height": 33,
+      "centerX": 32.5,
+      "bottom": 5
+    },
+    {
+      "id": "item_2_2",
+      "width": 53,
+      "height": 33,
+      "centerX": 32.5,
+      "bottom": 5
+    },
+    {
+      "id": "item_2_3",
+      "width": 43,
+      "height": 45,
+      "centerX": 34.5,
+      "bottom": 4
+    },
+    {
+      "id": "item_2_4",
+      "width": 44,
+      "height": 40,
+      "centerX": 33.0,
+      "bottom": 7
+    },
+    {
+      "id": "item_3_1",
+      "width": 47,
+      "height": 33,
+      "centerX": 32.5,
+      "bottom": 5
+    },
+    {
+      "id": "item_3_2",
+      "width": 53,
+      "height": 33,
+      "centerX": 32.5,
+      "bottom": 5
+    },
+    {
+      "id": "item_3_3",
+      "width": 43,
+      "height": 45,
+      "centerX": 34.5,
+      "bottom": 4
+    },
+    {
+      "id": "item_3_4",
+      "width": 44,
+      "height": 40,
+      "centerX": 33.0,
+      "bottom": 7
+    },
+    {
+      "id": "item_4_1",
+      "width": 47,
+      "height": 33,
+      "centerX": 32.5,
+      "bottom": 5
+    },
+    {
+      "id": "item_4_2",
+      "width": 53,
+      "height": 33,
+      "centerX": 32.5,
+      "bottom": 5
+    },
+    {
+      "id": "item_4_3",
+      "width": 43,
+      "height": 45,
+      "centerX": 34.5,
+      "bottom": 4
+    },
+    {
+      "id": "item_4_4",
+      "width": 44,
+      "height": 40,
+      "centerX": 33.0,
+      "bottom": 7
+    },
+    {
+      "id": "item_5_1",
+      "width": 47,
+      "height": 33,
+      "centerX": 32.5,
+      "bottom": 5
+    },
+    {
+      "id": "item_5_2",
+      "width": 53,
+      "height": 33,
+      "centerX": 32.5,
+      "bottom": 5
+    },
+    {
+      "id": "item_5_3",
+      "width": 43,
+      "height": 45,
+      "centerX": 34.5,
+      "bottom": 4
+    },
+    {
+      "id": "item_5_4",
+      "width": 44,
+      "height": 40,
+      "centerX": 33.0,
+      "bottom": 7
+    }
+  ]
+}

@@ -1,0 +1,17 @@
+/Library/
+/Temp/
+/Logs/
+/Obj/
+/Build/
+/UserSettings/
+/Tests/
+/docs/
+/tools/
+/Assets/Tests/
+/Assets/Tests.meta
+/Assets/Scripts/Player*QA.cs*
+*.csproj
+*.sln
+*.log
+*.bak
+.vs/

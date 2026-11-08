@@ -1,0 +1,16 @@
+{
+    "name": "CatGame.Runtime",
+    "rootNamespace": "CatGame",
+    "references": [
+        "Unity.2D.PixelPerfect"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
