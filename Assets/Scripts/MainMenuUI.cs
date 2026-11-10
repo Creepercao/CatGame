@@ -11,6 +11,7 @@ namespace CatGame
         GameObject _settingsOverlay;
         GameObject _confirmOverlay;
         Button _continueButton;
+        RectTransform _contentRoot;
 
         void Start()
         {
@@ -23,12 +24,13 @@ namespace CatGame
             scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
             scaler.referenceResolution = new Vector2(1920f, 1080f);
             scaler.screenMatchMode = CanvasScaler.ScreenMatchMode.MatchWidthOrHeight;
-            scaler.matchWidthOrHeight = 0.5f;
+            scaler.matchWidthOrHeight = Application.isMobilePlatform ? 1f : 0.5f;
             gameObject.AddComponent<GraphicRaycaster>();
 
-            var root = (RectTransform)transform;
-            var backdrop = UiKit.Panel(root, "MenuBackdrop", UiKit.Cream, false);
+            var canvasRoot = (RectTransform)transform;
+            var backdrop = UiKit.Panel(canvasRoot, "MenuBackdrop", UiKit.Cream, false);
             backdrop.rectTransform.Stretch(); backdrop.raycastTarget = false;
+            var root = _contentRoot = UiKit.ContentRoot(canvasRoot);
             var artFrame = UiKit.Node("MenuIllustration", root);
             artFrame.anchorMin = Vector2.zero; artFrame.anchorMax = new Vector2(.65f,1);
             artFrame.offsetMin = Vector2.zero; artFrame.offsetMax = Vector2.zero;
@@ -106,8 +108,7 @@ namespace CatGame
 
         void ShowNewGameConfirmation()
         {
-            var root = (RectTransform)transform;
-            var dim = UiKit.Panel(root, "NewGameConfirmation", new Color(0.16f, 0.12f, 0.10f, 0.62f), false);
+            var dim = UiKit.Panel(_contentRoot, "NewGameConfirmation", new Color(0.16f, 0.12f, 0.10f, 0.62f), false);
             _confirmOverlay = dim.gameObject;
             dim.rectTransform.Stretch();
             var card = UiKit.Panel(dim.transform, "Card", UiKit.Cream);
@@ -131,7 +132,7 @@ namespace CatGame
         void OpenSettings()
         {
             if (_settingsOverlay != null) return;
-            var dim = UiKit.Panel((RectTransform)transform, "SettingsOverlay", new Color(0.16f, 0.12f, 0.10f, 0.58f), false);
+            var dim = UiKit.Panel(_contentRoot, "SettingsOverlay", new Color(0.16f, 0.12f, 0.10f, 0.58f), false);
             _settingsOverlay = dim.gameObject;
             dim.rectTransform.Stretch();
             var card = UiKit.Panel(dim.transform, "Card", UiKit.Cream);

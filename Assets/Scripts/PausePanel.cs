@@ -37,7 +37,9 @@ namespace CatGame
 
         void Update()
         {
-            if (IsOpen && Input.GetKeyDown(KeyCode.Escape)) Close();
+            if (!Input.GetKeyDown(KeyCode.Escape)) return;
+            if (IsOpen) Close();
+            else if (Application.isMobilePlatform) Open();
         }
 
         public bool Open()

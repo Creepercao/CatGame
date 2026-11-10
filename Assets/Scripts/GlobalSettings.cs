@@ -18,6 +18,7 @@ namespace CatGame
         public static void ApplySaved()
         {
             AudioListener.volume=Volume;
+            if (Application.isMobilePlatform) return;
             int w=PlayerPrefs.GetInt("CatGame.Width",0),h=PlayerPrefs.GetInt("CatGame.Height",0);
             if(w>=640 && h>=480 && w<=7680 && h<=4320) Screen.SetResolution(w,h,FullScreenMode.Windowed);
         }
@@ -29,6 +30,7 @@ namespace CatGame
         public static void Attach(Transform parent,Text format,Slider volume,Vector2 anchor,Vector2 position)
         {
             var c=parent.gameObject.AddComponent<GlobalSettingsControls>(); c._format=format; c._volume=volume;
+            if (Application.isMobilePlatform) { c.Sync(); return; }
             var b=UiKit.Btn(parent,"Btn_resolution","",new Vector2(420,54),UiKit.PanelC,UiKit.Ink,20,c.CycleResolution);
             b.GetComponent<RectTransform>().At(anchor,anchor,position,new Vector2(420,54)); c._resolution=b.GetComponentInChildren<Text>(); c.Sync();
         }

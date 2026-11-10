@@ -12,6 +12,9 @@ namespace CatGame
     /// 位置每帧吸附到 1 像素，配合 PixelPerfectCamera 保证不糊不抖。
     /// </summary>
     public class CatActor : MonoBehaviour
+#if UNITY_ANDROID && !UNITY_EDITOR
+        , IPointerDownHandler
+#endif
     {
         public const float ArtScale = 1f;          // 保留兼容常量；实例按帧素材尺寸决定实际缩放
         const float Ppu = 100f;
@@ -217,14 +220,18 @@ namespace CatGame
             return true;
         }
 
+#if UNITY_ANDROID && !UNITY_EDITOR
+        public void OnPointerDown(PointerEventData eventData)
+        {
+            if (eventData.button == PointerEventData.InputButton.Left) OnLick();
+        }
+#else
         void OnMouseDown()
         {
-#if DEVELOPMENT_BUILD && !UNITY_EDITOR
-            if (PlayerVisualQA.IsScriptedFlow) return;
-#endif
             if (EventSystem.current != null && EventSystem.current.IsPointerOverGameObject()) return;
             OnLick();
         }
+#endif
 
         bool HasClip(string action)
         {

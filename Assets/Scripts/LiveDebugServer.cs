@@ -1,3 +1,4 @@
+#if UNITY_EDITOR || !UNITY_ANDROID
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -114,3 +115,4 @@ namespace CatGame
         void OnDestroy() { Shutdown(); }
     }
 }
+#endif

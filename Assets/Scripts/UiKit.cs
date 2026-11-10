@@ -26,12 +26,24 @@ namespace CatGame
             {
                 if (_font == null)
                 {
+#if UNITY_ANDROID && !UNITY_EDITOR
+                    _font = Resources.Load<Font>("Fonts/NotoSansSC-Regular");
+#endif
+                    if (_font == null)
                     _font = UnityEngine.Font.CreateDynamicFontFromOSFont(
                         new[] { "Microsoft YaHei", "Microsoft YaHei UI", "PingFang SC", "SimHei", "SimSun", "Arial" }, 32);
                     if (_font == null) _font = Resources.GetBuiltinResource<UnityEngine.Font>("LegacyRuntime.ttf");
                 }
                 return _font;
             }
+        }
+
+        internal static RectTransform ContentRoot(RectTransform canvasRoot)
+        {
+            if (!Application.isMobilePlatform) return canvasRoot;
+            var content = Node("SafeArea", canvasRoot).Stretch();
+            content.gameObject.AddComponent<SafeAreaLayout>();
+            return content;
         }
 
         static Sprite _roundSoft, _roundPill, _circle;

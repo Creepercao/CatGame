@@ -15,6 +15,7 @@ namespace CatGame
         AchievementToast _toast;
         PausePanel _pausePanel;
         GameObject _offlinePanel;
+        RectTransform _contentRoot;
         public ModalGate Modals { get; private set; }
         public IntroDialogue Intro { get; private set; }
         public StoryPlayer Stories { get; private set; }
@@ -40,10 +41,10 @@ namespace CatGame
             scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
             scaler.referenceResolution = new Vector2(1920f, 1080f);
             scaler.screenMatchMode = CanvasScaler.ScreenMatchMode.MatchWidthOrHeight;
-            scaler.matchWidthOrHeight = 0.5f;
+            scaler.matchWidthOrHeight = Application.isMobilePlatform ? 1f : 0.5f;
             gameObject.AddComponent<GraphicRaycaster>();
 
-            var root = (RectTransform)transform;
+            var root = _contentRoot = UiKit.ContentRoot((RectTransform)transform);
             Rocket=gameObject.AddComponent<RocketPurchase>();
             Rocket.Initialize(root,Economy,Modals);
             var sidebar = UiKit.Panel(root, "Sidebar", UiKit.Cream);
@@ -94,7 +95,7 @@ namespace CatGame
 
         public bool ShowOfflineSummary(OfflineEarningsResult result)
         {
-            return ShowOfflineSummary(result, (RectTransform)transform);
+            return ShowOfflineSummary(result, _contentRoot);
         }
 
         bool ShowOfflineSummary(OfflineEarningsResult result, RectTransform root)

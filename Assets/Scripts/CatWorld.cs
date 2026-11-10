@@ -120,6 +120,10 @@ namespace CatGame
             cam.backgroundColor = new Color32(0x8F, 0xB8, 0x9E, 0xFF);
             cam.transform.position = new Vector3(0f, 0f, -10f);
             cam.transform.rotation = Quaternion.identity;
+#if UNITY_ANDROID && !UNITY_EDITOR
+            if (cam.GetComponent<Physics2DRaycaster>() == null)
+                cam.gameObject.AddComponent<Physics2DRaycaster>();
+#endif
 
             // 2D Pixel Perfect：素材 ppu = 100，参考分辨率 1920x1080
             var pp = cam.GetComponent<PixelPerfectCamera>();

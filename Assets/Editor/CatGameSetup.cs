@@ -73,6 +73,47 @@ namespace CatGame.EditorTools
                 EditorApplication.Exit(1);
         }
 
+        [MenuItem("CatGame/5. 构建 Android APK", priority = 5)]
+        public static void BuildAndroid()
+        {
+            if (ScenesMissing()) SceneBuilders.BuildAllScenes();
+
+            var args = System.Environment.GetCommandLineArgs();
+            int outputIndex = System.Array.IndexOf(args, "-buildOutput");
+            if (outputIndex == args.Length - 1)
+                throw new UnityEditor.Build.BuildFailedException("-buildOutput requires an APK path.");
+            var output = Path.GetFullPath(outputIndex >= 0 ? args[outputIndex + 1] : "Build/Android/CatGame.apk");
+            if (!string.Equals(Path.GetExtension(output), ".apk", System.StringComparison.OrdinalIgnoreCase))
+                throw new UnityEditor.Build.BuildFailedException("The Android output path must end in .apk.");
+            Directory.CreateDirectory(Path.GetDirectoryName(output));
+
+            var orientation = PlayerSettings.defaultInterfaceOrientation;
+            var buildAppBundle = EditorUserBuildSettings.buildAppBundle;
+            var exportGradle = EditorUserBuildSettings.exportAsGoogleAndroidProject;
+            try
+            {
+                PlayerSettings.defaultInterfaceOrientation = UIOrientation.LandscapeLeft;
+                EditorUserBuildSettings.buildAppBundle = false;
+                EditorUserBuildSettings.exportAsGoogleAndroidProject = false;
+                var report = BuildPipeline.BuildPlayer(new BuildPlayerOptions
+                {
+                    scenes = ScenePaths,
+                    locationPathName = output,
+                    target = BuildTarget.Android,
+                    options = BuildOptions.None,
+                });
+                if (report.summary.result != UnityEditor.Build.Reporting.BuildResult.Succeeded)
+                    throw new UnityEditor.Build.BuildFailedException($"CatGame APK build {report.summary.result} ({report.summary.totalErrors} errors).");
+                Debug.Log($"[CatGame] Android APK: {output} ({report.summary.totalSize} bytes)");
+            }
+            finally
+            {
+                PlayerSettings.defaultInterfaceOrientation = orientation;
+                EditorUserBuildSettings.buildAppBundle = buildAppBundle;
+                EditorUserBuildSettings.exportAsGoogleAndroidProject = exportGradle;
+            }
+        }
+
         /// <summary>命令行一键：导入 + 生成三个场景 + 构建。</summary>
         public static void BuildAll()
         {

@@ -22,20 +22,13 @@ namespace CatGame.Idle
         {
             get
             {
-#if UNITY_EDITOR
-                string isolatedRoot = Environment.GetEnvironmentVariable("CATGAME_EDITOR_QA_ROOT");
-                if (!string.IsNullOrEmpty(isolatedRoot)) return GetSavePath(isolatedRoot);
-#endif
-#if DEVELOPMENT_BUILD && !UNITY_EDITOR
-                string playerQaRoot = Environment.GetEnvironmentVariable("CATGAME_PLAYER_QA_ROOT");
-                if (!string.IsNullOrEmpty(playerQaRoot)) return GetSavePath(playerQaRoot);
-#endif
                 return GetSavePath(Application.persistentDataPath);
             }
         }
-        public bool HasExistingSave { get { return File.Exists(SavePath); } }
+        public bool HasExistingSave { get; private set; }
 
         bool _dirty;
+        bool _resetBackup;
         float _lastSaveTime;
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
@@ -55,11 +48,12 @@ namespace CatGame.Idle
 
             Instance = this;
             DontDestroyOnLoad(gameObject);
-            State = LoadOrCreate(SavePath);
+            State = LoadOrCreate(SavePath, out bool loadedSave);
+            HasExistingSave = loadedSave;
             OfflineEarnings = global::CatGame.Idle.OfflineEarnings.Apply(State, DateTimeOffset.UtcNow.ToUnixTimeSeconds());
             // Merely opening the menu must not create a resumable game.
             // BeginNewGame or gameplay changes mark a fresh state dirty explicitly.
-            _dirty = File.Exists(SavePath);
+            _dirty = loadedSave;
             _lastSaveTime = Time.unscaledTime;
             SceneManager.activeSceneChanged += OnActiveSceneChanged;
         }
@@ -86,6 +80,7 @@ namespace CatGame.Idle
         {
             State = CreateNewGame();
             OfflineEarnings = null;
+            _resetBackup = true;
             _dirty = true;
             SaveNow();
         }
@@ -103,13 +98,18 @@ namespace CatGame.Idle
             try
             {
                 State.lastSeenUnix = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
-                SaveToPath(SavePath, State);
+                var path = SavePath;
+                WriteSave(path, State, keepPrevious: HasExistingSave && !_resetBackup);
+                HasExistingSave = true;
+                // A deliberately reset game must not recover an older playthrough.
+                if (_resetBackup) File.Delete(path + ".bak");
+                _resetBackup = false;
                 _dirty = false;
                 _lastSaveTime = Time.unscaledTime;
             }
             catch (Exception exception)
             {
-                // Keep the dirty flag set so the next autosave tick retries the write.
+                _dirty = true;
                 Debug.LogError("Could not save CatGame progress; it will be retried. " + exception.Message);
                 _lastSaveTime = Time.unscaledTime;
             }
@@ -139,8 +139,18 @@ namespace CatGame.Idle
 
         public static GameState LoadOrCreate(string path)
         {
+            return LoadOrCreate(path, out _);
+        }
+
+        static GameState LoadOrCreate(string path, out bool loadedSave)
+        {
             if (string.IsNullOrEmpty(path)) throw new ArgumentException("Save path must not be empty.", nameof(path));
-            if (!File.Exists(path)) return CreateNewGame();
+            loadedSave = false;
+            if (!File.Exists(path))
+            {
+                loadedSave = TryRestoreBackup(path, out var restored);
+                return loadedSave ? restored : CreateNewGame();
+            }
 
             string json;
             try
@@ -155,25 +165,62 @@ namespace CatGame.Idle
 
             try
             {
-                RequireVersionOneFields(json);
-                var state = JsonUtility.FromJson<GameState>(json);
-                if (state == null) throw new InvalidDataException("JSON did not contain a GameState object.");
-                if (state.version >= 2)
-                    foreach (var field in new[]{"introCompleted","seenStoryEvents","pendingStoryEvents","playSeconds","hasFullPlaytimeHistory","rocketPurchased","endingCompleted","hasEndingSnapshot","firstEnding"})
-                        if (!Regex.IsMatch(json, "\\\"" + field + "\\\"\\s*:")) throw new InvalidDataException("Story save field missing: " + field);
-                Upgrade(state);
-                Validate(state);
+                var state = ParseSave(json);
+                loadedSave = true;
                 return state;
             }
             catch (Exception exception)
             {
-                Quarantine(path);
+                if (Quarantine(path) && TryRestoreBackup(path, out var restored))
+                {
+                    loadedSave = true;
+                    return restored;
+                }
                 Debug.LogWarning("Save data could not be loaded; starting a new game. " + exception.Message);
                 return CreateNewGame();
             }
         }
 
+        static bool TryRestoreBackup(string path, out GameState state)
+        {
+            state = null;
+            var backupPath = path + ".bak";
+            if (!File.Exists(backupPath)) return false;
+
+            try
+            {
+                var restored = ParseSave(File.ReadAllText(backupPath, Encoding.UTF8));
+                WriteSave(path, restored, keepPrevious: false);
+                state = restored;
+                Debug.LogWarning("Recovered CatGame progress from backup.");
+                return true;
+            }
+            catch (Exception exception)
+            {
+                Debug.LogWarning("Save backup could not be restored. " + exception.Message);
+                return false;
+            }
+        }
+
+        static GameState ParseSave(string json)
+        {
+            RequireVersionOneFields(json);
+            var state = JsonUtility.FromJson<GameState>(json);
+            if (state == null) throw new InvalidDataException("JSON did not contain a GameState object.");
+            if (state.version >= 2)
+                foreach (var field in new[]{"introCompleted","seenStoryEvents","pendingStoryEvents","playSeconds","hasFullPlaytimeHistory","rocketPurchased","endingCompleted","hasEndingSnapshot","firstEnding"})
+                    if (!Regex.IsMatch(json, "\\\"" + field + "\\\"\\s*:")) throw new InvalidDataException("Story save field missing: " + field);
+            Upgrade(state);
+            Validate(state);
+            return state;
+        }
+
         public static void SaveToPath(string path, GameState state)
+        {
+            WriteSave(path, state, keepPrevious: true);
+        }
+
+        static void WriteSave(string path, GameState state, bool keepPrevious)
         {
             if (string.IsNullOrEmpty(path)) throw new ArgumentException("Save path must not be empty.", nameof(path));
             Validate(state);
@@ -183,20 +230,13 @@ namespace CatGame.Idle
             Directory.CreateDirectory(directory);
 
             var temporaryPath = path + ".tmp";
-            var backupPath = path + ".bak";
             if (File.Exists(temporaryPath)) File.Delete(temporaryPath);
             File.WriteAllText(temporaryPath, JsonUtility.ToJson(state, true), new UTF8Encoding(false));
 
             if (File.Exists(path))
-            {
-                if (File.Exists(backupPath)) File.Delete(backupPath);
-                File.Replace(temporaryPath, path, backupPath);
-                if (File.Exists(backupPath)) File.Delete(backupPath);
-            }
+                File.Replace(temporaryPath, path, keepPrevious ? path + ".bak" : null);
             else
-            {
                 File.Move(temporaryPath, path);
-            }
         }
 
         public static GameState CreateNewGame()
@@ -327,7 +367,7 @@ namespace CatGame.Idle
             return !double.IsNaN(value) && !double.IsInfinity(value) && value >= 0;
         }
 
-        static void Quarantine(string path)
+        static bool Quarantine(string path)
         {
             try
             {
@@ -339,10 +379,12 @@ namespace CatGame.Idle
                     File.Move(badPath, Path.Combine(directory, "save.bad." + timestamp + ".json"));
                 }
                 File.Move(path, badPath);
+                return true;
             }
             catch (Exception quarantineException)
             {
                 Debug.LogWarning("Could not quarantine invalid save file: " + quarantineException.Message);
+                return false;
             }
         }
     }
