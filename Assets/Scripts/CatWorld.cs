@@ -39,13 +39,13 @@ namespace CatGame
 
         void LateUpdate()
         {
-            if (_viewWidth != Screen.width || _viewHeight != Screen.height) FitWindow();
+            if (_viewWidth != Screen.width || _viewHeight != Screen.height) FitWindow(Screen.width, Screen.height);
         }
 
-        void FitWindow()
+        void FitWindow(int width, int height)
         {
-            _viewWidth = Screen.width;
-            _viewHeight = Screen.height;
+            _viewWidth = width;
+            _viewHeight = height;
             var camera = Camera.main;
             if (camera == null || _viewHeight <= 0) return;
             float aspect = (float)_viewWidth / _viewHeight;
@@ -60,7 +60,15 @@ namespace CatGame
             var background = room != null ? room.GetComponent<SpriteRenderer>() : null;
             if (background != null && background.sprite != null)
             {
-                float halfHeight = pixelPerfect != null && pixelPerfect.enabled ? 5.4f : camera.orthographicSize;
+                float halfHeight = camera.orthographicSize;
+                if (pixelPerfect != null && pixelPerfect.enabled)
+                {
+                    // Pixel Perfect fits full-screen pixels using an integer zoom, so
+                    // non-integer reference sizes expose more than the 5.4-unit half-height.
+                    int zoom = Mathf.Max(1, Mathf.Min(_viewWidth / pixelPerfect.refResolutionX,
+                        _viewHeight / pixelPerfect.refResolutionY));
+                    halfHeight = _viewHeight / (2f * pixelPerfect.assetsPPU * zoom);
+                }
                 var size = background.sprite.bounds.size;
                 float cover = Mathf.Max(halfHeight * 2 * aspect / size.x, halfHeight * 2 / size.y);
                 background.transform.localScale = new Vector3(cover, cover, 1);
@@ -137,7 +145,7 @@ namespace CatGame
             pp.cropFrameY = false;
 
             cam.orthographicSize = 1080f / 2f / 100f;   // 5.4：1 世界单位 = 100 像素
-            FitWindow();
+            FitWindow(Screen.width, Screen.height);
         }
 
         void EnsureEventSystem()
