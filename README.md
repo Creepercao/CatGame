@@ -4,13 +4,15 @@
 
 ## 下载与运行
 
-在本仓库Releases下载Windows x64 ZIP，完整解压后运行CatGame.exe。无需安装Unity或Python。可选外置修改器位于Debugger/CatGameDebugger.exe，游戏运行时自动连接；主菜单、对话或暂停时不可修改，进入正常玩法后使用。请勿移动单个EXE而遗漏数据目录。
+在 [Windows v1.0.1](https://github.com/Creepercao/CatGame/releases/tag/v1.0.1) 下载 x64 ZIP，完整解压后运行CatGame.exe。无需安装Unity或Python。可选外置修改器位于Debugger/CatGameDebugger.exe，游戏运行时自动连接；主菜单、对话或暂停时不可修改，进入正常玩法后使用。请勿移动单个EXE而遗漏数据目录。
 
 存档位于Windows用户的AppData/LocalLow/CatGameStudio/喵屋下；重新解压不清除已有进度。修改器改变运行状态，由游戏正常保存。
 
 Android ARM64 APK 见 [Android 预览版](https://github.com/Creepercao/CatGame/releases/tag/android-v1.0.0-preview.1)，附件包含 APK、安装说明和 SHA-256 校验文件。打开 APK 后按系统提示安装，也可用 `adb -s <设备序列号> install -r CatGame-Android.apk`。游戏包名为 `com.catgamestudio.catgame`，同签名的旧版可以覆盖安装。Android 版使用触摸操作，核心玩法离线运行。已在 MuMu、Android 14 模拟器和小米 22081212C / Android 15 完成验证；真机短时性能采样不代表其他设备、耗电表现或长期稳定性。
 
 新版普通保存会保留上一份已提交存档。主档缺失或损坏时会尝试恢复该备份，可能回退最近一轮保存后的进度。
+
+Windows v1.0.1 对短暂的文件替换错误 1175 增加有限恢复：最多额外三次重试、每次等待 10ms；持续失败或其他错误仍记录到日志。既有存档路径和格式不变。
 
 ## 开发环境
 
