@@ -22,6 +22,14 @@ namespace CatGame.Idle
         {
             get
             {
+#if UNITY_EDITOR
+                string isolatedRoot = Environment.GetEnvironmentVariable("CATGAME_EDITOR_QA_ROOT");
+                if (!string.IsNullOrEmpty(isolatedRoot)) return GetSavePath(isolatedRoot);
+#endif
+#if DEVELOPMENT_BUILD && !UNITY_EDITOR
+                string playerQaRoot = Environment.GetEnvironmentVariable("CATGAME_PLAYER_QA_ROOT");
+                if (!string.IsNullOrEmpty(playerQaRoot)) return GetSavePath(playerQaRoot);
+#endif
                 return GetSavePath(Application.persistentDataPath);
             }
         }
@@ -220,7 +228,8 @@ namespace CatGame.Idle
             WriteSave(path, state, keepPrevious: true);
         }
 
-        static void WriteSave(string path, GameState state, bool keepPrevious)
+        static void WriteSave(string path, GameState state, bool keepPrevious,
+            Action<string, string, string> replaceFile = null, Action<int> wait = null)
         {
             if (string.IsNullOrEmpty(path)) throw new ArgumentException("Save path must not be empty.", nameof(path));
             Validate(state);
@@ -234,7 +243,29 @@ namespace CatGame.Idle
             File.WriteAllText(temporaryPath, JsonUtility.ToJson(state, true), new UTF8Encoding(false));
 
             if (File.Exists(path))
-                File.Replace(temporaryPath, path, keepPrevious ? path + ".bak" : null);
+            {
+                var replace = replaceFile ?? File.Replace;
+#if UNITY_EDITOR_WIN || UNITY_STANDALONE_WIN
+                // Win32 1175 retains both original file names. Retry the same
+                // pending write, without deleting the committed save or backup.
+                for (int attempt = 0; ; attempt++)
+                {
+                    try
+                    {
+                        replace(temporaryPath, path, keepPrevious ? path + ".bak" : null);
+                        if (attempt > 0)
+                            Debug.LogWarning("Recovered CatGame save replacement after " + attempt + " transient error(s).");
+                        break;
+                    }
+                    catch (IOException exception) when (exception.HResult == unchecked((int)0x80070497) && attempt < 3)
+                    {
+                        (wait ?? System.Threading.Thread.Sleep)(10);
+                    }
+                }
+#else
+                replace(temporaryPath, path, keepPrevious ? path + ".bak" : null);
+#endif
+            }
             else
                 File.Move(temporaryPath, path);
         }

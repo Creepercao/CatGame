@@ -56,7 +56,14 @@ namespace CatGame.EditorTools
         {
             if (ScenesMissing()) SceneBuilders.BuildAllScenes();
 
-            var outDir = Path.GetFullPath(Path.Combine(Application.dataPath, "../Build/CatGame.exe"));
+            var args = System.Environment.GetCommandLineArgs();
+            int outputIndex = System.Array.IndexOf(args, "-buildOutput");
+            if (outputIndex == args.Length - 1)
+                throw new UnityEditor.Build.BuildFailedException("-buildOutput requires an EXE path.");
+            var outDir = Path.GetFullPath(outputIndex >= 0 ? args[outputIndex + 1]
+                : Path.Combine(Application.dataPath, "../Build/CatGame.exe"));
+            if (!string.Equals(Path.GetExtension(outDir), ".exe", System.StringComparison.OrdinalIgnoreCase))
+                throw new UnityEditor.Build.BuildFailedException("The Windows output path must end in .exe.");
             Directory.CreateDirectory(Path.GetDirectoryName(outDir));
 
             var opts = new BuildPlayerOptions
