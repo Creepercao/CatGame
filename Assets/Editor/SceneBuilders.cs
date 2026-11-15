@@ -11,8 +11,7 @@ namespace CatGame.EditorTools
     /// 世界里的地面与摆件烘成真的 SpriteRenderer 对象（编辑器里可见、可拖、可做 Prefab），
     /// 猫和 HUD 由 CatWorld 运行时生成。
     ///
-    /// 坐标系：像素 → 世界单位 1:100（素材 ppu = 100，相机 orthographicSize = 5.4）。
-    /// 像素图按整数倍放大（摆件 1×/2×/3×，地砖 2×），配合 PixelPerfectCamera 保持清晰。
+    /// Home使用WorldArtSettings；Park是未启用的旧预览，明确保留100PPU坐标。
     /// </summary>
     public static class SceneBuilders
     {
@@ -95,7 +94,8 @@ namespace CatGame.EditorTools
                 sr.sprite = room;
                 sr.sortingOrder = -100;
                 float sw = room.rect.width, sh = room.rect.height;
-                float cover = Mathf.Max(1920f / sw, 1080f / sh);
+                var reference = WorldArtSettings.Current.ReferencePixels;
+                float cover = Mathf.Max(reference.x / sw, reference.y / sh);
                 go.transform.localScale = new Vector3(cover, cover, 1f);
                 go.transform.position = Vector3.zero;
                 surface = go.AddComponent<RoomWalkSurface>();
@@ -112,8 +112,9 @@ namespace CatGame.EditorTools
             cw.WalkSurface = surface;
             cw.Title = "猫窝";
             // Left HUD / full right world; surface further checks wall and prop footprints.
-            cw.FloorCenter = new Vector2(2.2f, -0.2f);
-            cw.FloorHalf = new Vector2(6.5f, 3.6f);
+            cw.FloorCenter = WorldArtSettings.Current.HomeFloorCenter;
+            cw.FloorHalf = WorldArtSettings.Current.HomeHalf;
+            Camera.main.orthographicSize = WorldArtSettings.Current.HalfHeight(1920, 1080);
 
             Save(scene, HomePath);
         }
@@ -128,6 +129,7 @@ namespace CatGame.EditorTools
             var shelf = new GameObject("Bookshelf").transform;
             shelf.SetParent(parent, false);
             var shelfPieces = new List<SpriteRenderer>();
+            float ppu = WorldArtSettings.Current.WorldPixelsPerUnit;
             foreach (var layer in layout.layers)
             {
                 if (layer.placements == null) continue;
@@ -139,8 +141,8 @@ namespace CatGame.EditorTools
                     var piece = new GameObject(p.asset);
                     piece.transform.SetParent(book ? shelf : parent, false);
                     piece.transform.localPosition = new Vector3(
-                        (p.x + layout.cell / 2f - layout.width / 2f) / 100f,
-                        (layout.height / 2f - p.y - layout.cell / 2f) / 100f, 0);
+                        (p.x + layout.cell / 2f - layout.width / 2f) / ppu,
+                        (layout.height / 2f - p.y - layout.cell / 2f) / ppu, 0);
                     var renderer = piece.AddComponent<SpriteRenderer>();
                     renderer.sprite = sprite;
                     renderer.sortingOrder = -50;
@@ -148,12 +150,12 @@ namespace CatGame.EditorTools
                     if (p.asset == "window") continue;
                     float groundY = p.asset == "plant" ? 69 : p.asset == "cat_bed" ? 72 : 126;
                     var depth = piece.AddComponent<RoomFurnitureDepth>();
-                    depth.LocalGround = new Vector3(0, (p.y + layout.cell / 2f - groundY) / 100f, 0);
+                    depth.LocalGround = new Vector3(0, (p.y + layout.cell / 2f - groundY) / ppu, 0);
                     depth.Pieces = new[] { renderer };
                 }
             }
             var shelfDepth = shelf.gameObject.AddComponent<RoomFurnitureDepth>();
-            shelfDepth.LocalGround = new Vector3((144 - layout.width / 2f) / 100f, (layout.height / 2f - 125) / 100f, 0);
+            shelfDepth.LocalGround = new Vector3((144 - layout.width / 2f) / ppu, (layout.height / 2f - 125) / ppu, 0);
             shelfDepth.Pieces = shelfPieces.ToArray();
         }
 

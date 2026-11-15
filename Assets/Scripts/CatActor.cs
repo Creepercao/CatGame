@@ -8,8 +8,7 @@ namespace CatGame
     /// 猫：世界里的实体（SpriteRenderer），不是 UI。
     /// 负责序列帧动画、强制动作、自动漫游、打瞌睡、朝向翻转、按 y 排序。
     ///
-    /// 像素对齐：素材 ppu = 100，1 世界单位 = 100 屏幕像素；按素材尺寸缩放为 64px 高，
-    /// 位置每帧吸附到 1 像素，配合 PixelPerfectCamera 保证不糊不抖。
+    /// 世界像素/画布/脚线来自 WorldArtSettings；原点表示脚点，屏幕大小由相机决定。
     /// </summary>
     public class CatActor : MonoBehaviour
 #if UNITY_ANDROID && !UNITY_EDITOR
@@ -17,7 +16,6 @@ namespace CatGame
 #endif
     {
         public const float ArtScale = 1f;          // 保留兼容常量；实例按帧素材尺寸决定实际缩放
-        const float Ppu = 100f;
 
         public static Vector3 LastPosition;
 
@@ -46,6 +44,7 @@ namespace CatGame
         bool _resting;
         public const float SleepDelay = 2f;
         Vector2 _visualPadding;
+        float _visualCenterY;
         public RoomWalkSurface WalkSurface { get; private set; }
         public float GroundOffset { get; private set; }
 
@@ -65,8 +64,8 @@ namespace CatGame
 
         static Vector3 SnapPosition(Vector3 position)
         {
-            return new Vector3(Mathf.Round(position.x * Ppu) / Ppu,
-                Mathf.Round(position.y * Ppu) / Ppu, 0f);
+            position.z = 0;
+            return WorldArtSettings.Current.Snap(position);
         }
 
         void MoveTo(Vector3 candidate)
@@ -114,6 +113,7 @@ namespace CatGame
             _home = floorCenter;
             _pos = _home;
             Bind(breed);
+            _pos = SafeCenter();
             PickNewTarget(0.8f);
             _pauseUntil = Time.time + 0.6f;      // 出生先站一会儿，别一上来就走
             ApplyVisual();
@@ -124,7 +124,7 @@ namespace CatGame
         {
             _home = center;
             _halfAxes = halfAxes;
-            _pos = center;
+            _pos = SafeCenter();
             PickNewTarget();
             ApplyVisual();
         }
@@ -136,8 +136,9 @@ namespace CatGame
             _breed = breed;
             _visualScale = ScaleForBreed(breed);
             GroundOffset = breed != null && breed.Idle != null && breed.Idle.Length > 0
-                ? (breed.Idle[0].bounds.min.y + breed.Idle[0].bounds.size.y * (6f / 64f)) * _visualScale : 0;
+                ? (breed.Idle[0].bounds.min.y + breed.Idle[0].bounds.size.y * WorldArtSettings.Current.CatFootFraction) * _visualScale : 0;
             _visualPadding = Vector2.zero;
+            float bottom = 0, top = 0;
             foreach (var action in ActionNames.All)
             {
                 var frames = breed != null ? breed.Clip(action) : null;
@@ -146,10 +147,14 @@ namespace CatGame
                 {
                     if (frame == null) continue;
                     var bounds = frame.bounds;
-                    _visualPadding.x = Mathf.Max(_visualPadding.x, Mathf.Max(Mathf.Abs(bounds.min.x), Mathf.Abs(bounds.max.x)) * _visualScale);
-                    _visualPadding.y = Mathf.Max(_visualPadding.y, Mathf.Max(Mathf.Abs(bounds.min.y), Mathf.Abs(bounds.max.y)) * _visualScale);
+                    _visualPadding.x = Mathf.Max(_visualPadding.x,
+                        Mathf.Max(Mathf.Abs(bounds.min.x), Mathf.Abs(bounds.max.x)) * _visualScale);
+                    bottom = Mathf.Min(bottom, bounds.min.y * _visualScale);
+                    top = Mathf.Max(top, bounds.max.y * _visualScale);
                 }
             }
+            _visualPadding.y = (top - bottom) * .5f;
+            _visualCenterY = (top + bottom) * .5f;
             _frame = 0;
             _frameClock = 0f;
             _lastAction = null;
@@ -312,10 +317,11 @@ namespace CatGame
         void PickNewTarget(float minDist = 0f)
         {
             var safeHalf = SafeHalfAxes();
+            var center = SafeCenter();
             for (int i = 0; i < 32; i++)
             {
-                float x = _home.x + UnityEngine.Random.Range(-safeHalf.x, safeHalf.x);
-                float y = _home.y + UnityEngine.Random.Range(-safeHalf.y, safeHalf.y);
+                float x = center.x + UnityEngine.Random.Range(-safeHalf.x, safeHalf.x);
+                float y = center.y + UnityEngine.Random.Range(-safeHalf.y, safeHalf.y);
                 var candidate = new Vector3(x, y, 0f);
                 if (((candidate - _pos).magnitude >= minDist || i >= 7) && CanReach(candidate))
                 {
@@ -375,14 +381,15 @@ namespace CatGame
         {
             if (Renderer == null) return;
             var safeHalf = SafeHalfAxes();
-            _pos.x = Mathf.Clamp(_pos.x, _home.x - safeHalf.x, _home.x + safeHalf.x);
-            _pos.y = Mathf.Clamp(_pos.y, _home.y - safeHalf.y, _home.y + safeHalf.y);
+            var center = SafeCenter();
+            _pos.x = Mathf.Clamp(_pos.x, center.x - safeHalf.x, center.x + safeHalf.x);
+            _pos.y = Mathf.Clamp(_pos.y, center.y - safeHalf.y, center.y + safeHalf.y);
 
             var clip = ActiveClip();
             if (clip != null && clip.Length > 0)
                 Renderer.sprite = clip[Mathf.Clamp(_frame, 0, clip.Length - 1)];
 
-            // 吸附到 1 像素（0.01 世界单位），避免子像素抖动
+            // 同房间使用统一世界像素格；逻辑路径和吸附后的脚点都须可达。
             var snapped = SnapPosition(_pos);
             transform.position = snapped;
 
@@ -403,14 +410,16 @@ namespace CatGame
         static float ScaleForBreed(CatBreed breed)
         {
             if (breed == null || breed.Idle == null || breed.Idle.Length == 0) return ArtScale;
-            float height = breed.Idle[0].rect.height;
-            return height <= 0f ? ArtScale : 64f / height;
+            return WorldArtSettings.Current.CatScale(breed.Idle[0]);
         }
+
+        Vector3 SafeCenter() { return _home - Vector3.up * _visualCenterY; }
 
         Vector2 SafeHalfAxes()
         {
-            return new Vector2(Mathf.Max(0, _halfAxes.x - _visualPadding.x - 0.01f),
-                Mathf.Max(0, _halfAxes.y - _visualPadding.y - 0.01f));
+            float pixel = WorldArtSettings.Current.UnitsPerPixel;
+            return new Vector2(Mathf.Max(0, _halfAxes.x - _visualPadding.x - pixel),
+                Mathf.Max(0, _halfAxes.y - _visualPadding.y - pixel));
         }
 
         void UpdateZzz()
@@ -435,7 +444,8 @@ namespace CatGame
                 if (show)
                 {
                     float t = Mathf.Repeat(Time.time * 0.5f, 1f);
-                    _zzz.localPosition = new Vector3(0.55f + t * 0.3f, 0.8f + t * 0.5f, 0f);
+                    float top = Renderer.sprite != null ? Renderer.sprite.bounds.max.y : 1f;
+                    _zzz.localPosition = new Vector3(0.55f + t * 0.3f, top - .2f + t * .5f, 0f);
                 }
             }
         }

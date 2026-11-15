@@ -1,0 +1,26 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e7f95212542845c9b49cdd657d22242c, type: 3}
+  m_Name: WorldArtSettings
+  m_EditorClassIdentifier: 
+  WorldPixelsPerUnit: 32
+  CatCanvasPixels: 64
+  CatFootPixels: 6
+  ReferencePixels: {x: 640, y: 360}
+  UiPixelsPerUnit: 100
+  HomeFootCenterPixels: {x: 74, y: -34}
+  HomeHalfPixels: {x: 217, y: 120}
+  ItemGridOffsetPixels: {x: 0, y: 27}
+  BowlWidthPixels: 40
+  BedWidthPixels: 61
+  FeederHeightPixels: 37
+  DecorationHeightPixels: 22

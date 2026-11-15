@@ -17,10 +17,11 @@ namespace CatGame
         public static float Scale(string id, float ppu)
         {
             var profile = Get(id);
-            if (id.EndsWith("_2")) return 1.9f * ppu / profile.width; // beds fit a cat
-            if (id.EndsWith("_3")) return 1.15f * ppu / profile.height; // upright feeder
-            if (id.EndsWith("_4")) return .7f * ppu / profile.height;
-            return 1.25f * ppu / profile.width;
+            var rules = WorldArtSettings.Current;
+            if (id.EndsWith("_2")) return rules.BedWidthPixels * rules.UnitsPerPixel * ppu / profile.width;
+            if (id.EndsWith("_3")) return rules.FeederHeightPixels * rules.UnitsPerPixel * ppu / profile.height;
+            if (id.EndsWith("_4")) return rules.DecorationHeightPixels * rules.UnitsPerPixel * ppu / profile.height;
+            return rules.BowlWidthPixels * rules.UnitsPerPixel * ppu / profile.width;
         }
     }
 }

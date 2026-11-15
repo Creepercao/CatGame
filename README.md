@@ -40,3 +40,11 @@ Windows v1.0.1 对短暂的文件替换错误 1175 增加有限恢复：最多�
 ## 项目与素材说明
 
 个人项目，使用 AI 辅助开发与部分素材制作。仓库未声明统一开源许可证，第三方素材的权利归原作者。Android 中文字体为 Noto Sans SC，随字体附带 SIL Open Font License。
+
+## 素材尺寸配置（1.1.0候选）
+
+Unity菜单 `CatGame → Art → Select world art settings` 可定位 `Assets/Resources/Settings/WorldArtSettings.asset`。修改世界密度、脚线、参考画布或用品尺寸后，停止Play并执行 `CatGame → Art → Apply world art settings and rebuild Home`；更新导入与场景会保留素材GUID、切片ID和帧顺序。
+
+默认世界32PPU、猫画布64逻辑像素（2世界单位）、脚线距底部6像素，世界参考640×360。1920/2560标准屏分别3/4倍显示，其他比例使用Point完整取景回退；UI九宫格、CG与文字使用独立显示规则。用品按实际不透明范围落地，32格兼容素材自动换算。Park仍为旧坐标的未启用预览场景。
+
+后续跨平台发行将Windows ZIP（含可选外置修改器）、Android APK与校验说明放在同一个Release；上方既有版本链接保留到新候选完成验收再更新。

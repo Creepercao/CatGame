@@ -24,16 +24,7 @@ namespace CatGame.EditorTools
         [MenuItem("CatGame/1. 重新导入美术资源", priority = 1)]
         public static void ForceReimportArt()
         {
-            // 删掉 png 的 .meta，让 ArtImportRules 在"首次导入"时套用正确设置。
-            // （不在批处理里反复 SaveAndReimport —— 那会让资源管线崩溃）
-            int removed = 0;
-            foreach (var meta in Directory.GetFiles(ArtRoot, "*.png.meta", SearchOption.AllDirectories))
-            {
-                File.Delete(meta);
-                removed++;
-            }
-            AssetDatabase.Refresh(ImportAssetOptions.ForceUpdate);
-            Debug.Log("[CatGame] 已重新导入美术资源（清理 meta " + removed + " 个）");
+            WorldArtMigration.Apply();
         }
 
         static bool HasArtMeta()

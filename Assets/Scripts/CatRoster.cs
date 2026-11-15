@@ -216,7 +216,8 @@ namespace CatGame
         {
             if (actor == null) return;
             var go = new GameObject("ClickReward");
-            go.transform.position = actor.Position + new Vector3(0f, 0.55f, 0f);
+            var bodyCenter = actor.Renderer != null ? actor.Renderer.bounds.center : actor.Position;
+            go.transform.position = bodyCenter + new Vector3(0f, 0.55f, 0f);
             var label = go.AddComponent<TextMesh>();
             label.text = "+" + FormatReward(value);
             label.fontSize = 48;

@@ -17,7 +17,7 @@ namespace CatGame
         [Header("场景标题（显示在 HUD 左上角）")]
         public string Title = "猫窝";
 
-        [Header("猫的活动范围：中心与半宽半高（世界单位，1 单位 = 100 像素）")]
+        [Header("猫的完整画布活动范围：中心与半宽半高（世界单位，密度见WorldArtSettings）")]
         public Vector2 FloorCenter = Vector2.zero;
         public Vector2 FloorHalf = new Vector2(8f, 2.4f);
 
@@ -48,27 +48,18 @@ namespace CatGame
             _viewHeight = height;
             var camera = Camera.main;
             if (camera == null || _viewHeight <= 0) return;
+            if (_viewWidth <= 0) return;
             float aspect = (float)_viewWidth / _viewHeight;
-            var pixelPerfect = camera.GetComponent<PixelPerfectCamera>();
-            // Integer pixel projection crops below the reference size. Small/narrow
-            // windows instead fit the complete world, with point-filtered source art.
-            if (pixelPerfect != null)
-                pixelPerfect.enabled = _viewWidth >= 1920 && _viewHeight >= 1080 && aspect >= 16f / 9f;
-            if (pixelPerfect == null || !pixelPerfect.enabled)
-                camera.orthographicSize = Mathf.Max(5.4f, 9.6f / aspect);
+            var legacy = camera.GetComponent<PixelPerfectCamera>();
+            if (legacy != null) legacy.enabled = false;
+            var pixelCamera = camera.GetComponent<WorldPixelCamera>();
+            if (pixelCamera == null) pixelCamera = camera.gameObject.AddComponent<WorldPixelCamera>();
+            pixelCamera.Fit(width, height);
             var room = GameObject.Find("Room");
             var background = room != null ? room.GetComponent<SpriteRenderer>() : null;
             if (background != null && background.sprite != null)
             {
                 float halfHeight = camera.orthographicSize;
-                if (pixelPerfect != null && pixelPerfect.enabled)
-                {
-                    // Pixel Perfect fits full-screen pixels using an integer zoom, so
-                    // non-integer reference sizes expose more than the 5.4-unit half-height.
-                    int zoom = Mathf.Max(1, Mathf.Min(_viewWidth / pixelPerfect.refResolutionX,
-                        _viewHeight / pixelPerfect.refResolutionY));
-                    halfHeight = _viewHeight / (2f * pixelPerfect.assetsPPU * zoom);
-                }
                 var size = background.sprite.bounds.size;
                 float cover = Mathf.Max(halfHeight * 2 * aspect / size.x, halfHeight * 2 / size.y);
                 background.transform.localScale = new Vector3(cover, cover, 1);
@@ -95,7 +86,7 @@ namespace CatGame
                 if (ShowPlatform)
                 {
                     Platform = gameObject.AddComponent<PlatformGrid>();
-                    Platform.Initialize(FloorCenter, FloorHalf, Economy);
+                    Platform.Initialize(FloorCenter + WorldArtSettings.Current.ItemGridOffset, FloorHalf, Economy);
                 }
                 var currentId = CatGame.I != null && CatGame.I.Current != null ? CatGame.I.Current.Id : "Milk";
                 Cat = Roster.FindActor(currentId);
@@ -133,18 +124,7 @@ namespace CatGame
                 cam.gameObject.AddComponent<Physics2DRaycaster>();
 #endif
 
-            // 2D Pixel Perfect：素材 ppu = 100，参考分辨率 1920x1080
-            var pp = cam.GetComponent<PixelPerfectCamera>();
-            if (pp == null) pp = cam.gameObject.AddComponent<PixelPerfectCamera>();
-            pp.assetsPPU = 100;
-            pp.refResolutionX = 1920;
-            pp.refResolutionY = 1080;
-            pp.upscaleRT = false;
-            pp.pixelSnapping = true;
-            pp.cropFrameX = false;
-            pp.cropFrameY = false;
-
-            cam.orthographicSize = 1080f / 2f / 100f;   // 5.4：1 世界单位 = 100 像素
+            // The world raster has its own logical grid; overlay UI stays native resolution.
             FitWindow(Screen.width, Screen.height);
         }
 

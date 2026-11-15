@@ -7,11 +7,11 @@ namespace CatGame.EditorTools
 {
     /// <summary>
     /// 美术资源的导入规则：猫咪横条按帧高切帧（Point 过滤，像素清晰），
-    /// 房间/UI 图按整图 Sprite 导入（Bilinear）。
+    /// 房间/UI 图按整图 Sprite 导入（像素目录Point，其余Bilinear）。
     ///
     /// 只在"第一次导入"（或 meta 被删掉之后）生效：规则跑完会在 meta 的 userData 里写下标记，
     /// 之后无论你在 Inspector 里怎么手调、点多少次 Apply，都不会再被覆盖。
-    /// 想重新套用规则：删掉该图的 .png.meta（或跑 CatGameSetup.ForceReimportArt）。
+    /// 重新套用统一规则使用CatGame/Art/Apply，保留meta与Sprite身份。
     /// 想彻底让某张图不受管：把它的 userData 手填成 manual。
     /// </summary>
     public class ArtImportRules : AssetPostprocessor
@@ -30,7 +30,7 @@ namespace CatGame.EditorTools
             var imp = (TextureImporter)assetImporter;
 
             // 已经认领过（或用户标了 manual）→ 尊重现有 meta，不再插手
-            if (imp.userData == RuleMarker || imp.userData == "manual") return;
+            if (imp.userData == RuleMarker || imp.userData == "catgame-import-rules-v2" || imp.userData == "manual") return;
 
             bool isCat = assetPath.Replace('\\', '/').Contains("/Cats/");
 
@@ -59,7 +59,7 @@ namespace CatGame.EditorTools
                 // 一旦上限设成 512 就会被 Unity 降采样，像素猫直接糊掉（踩过一次）。
                 imp.maxTextureSize = 2048;
                 s.spriteMode = (int)SpriteImportMode.Multiple;
-                s.spritePixelsPerUnit = CatCell;
+                s.spritePixelsPerUnit = WorldArtSettings.Current.WorldPixelsPerUnit;
                 imp.SetTextureSettings(s);
                 imp.spritesheet = BuildCatFrames(assetPath);
             }
@@ -67,7 +67,8 @@ namespace CatGame.EditorTools
             {
                 imp.maxTextureSize = 2048;
                 s.spriteMode = (int)SpriteImportMode.Single;
-                s.spritePixelsPerUnit = 100;
+                bool isWorld = assetPath.Contains("/Room/Pixel/") || assetPath.Contains("/Items/Pixel/");
+                s.spritePixelsPerUnit = isWorld ? WorldArtSettings.Current.WorldPixelsPerUnit : WorldArtSettings.Current.UiPixelsPerUnit;
                 if (assetPath.Contains("/UI/Pixel/"))
                 {
                     string name = Path.GetFileNameWithoutExtension(assetPath);
@@ -86,14 +87,15 @@ namespace CatGame.EditorTools
             if (isPixel)
             {
                 SetPixelPlatform(imp, "Standalone");
+                SetPixelPlatform(imp, "Android");
                 SetPixelPlatform(imp, "WebGL");
             }
 
             // 认领：写下标记，以后再导入就跳过，手调设置不会被规则覆盖
-            imp.userData = RuleMarker;
+            imp.userData = "catgame-import-rules-v2";
         }
 
-        static void SetPixelPlatform(TextureImporter imp, string platform)
+        public static void SetPixelPlatform(TextureImporter imp, string platform)
         {
             var ps = imp.GetPlatformTextureSettings(platform);
             ps.overridden = true;
@@ -124,8 +126,8 @@ namespace CatGame.EditorTools
                     {
                         name = clip + "_" + (y * cols + x),
                         rect = new Rect(x * cell, size.y - (y + 1) * cell, cell, cell),
-                        alignment = (int)SpriteAlignment.Center,
-                        pivot = new Vector2(0.5f, 0.5f),
+                        alignment = (int)SpriteAlignment.Custom,
+                        pivot = new Vector2(0.5f, WorldArtSettings.Current.CatFootFraction),
                         border = Vector4.zero,
                     });
                 }

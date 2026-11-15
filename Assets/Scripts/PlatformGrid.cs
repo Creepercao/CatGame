@@ -93,8 +93,8 @@ namespace CatGame
             var profile = WorldItemArt.Get(definition.id);
             float scale = WorldItemArt.Scale(definition.id, badge.sprite.pixelsPerUnit);
             icon.transform.localScale = new Vector3(scale, scale, 1f);
-            icon.transform.localPosition = new Vector3((32 - profile.centerX) / badge.sprite.pixelsPerUnit * scale,
-                (32 - profile.bottom) / badge.sprite.pixelsPerUnit * scale, 0);
+            icon.transform.localPosition = new Vector3((badge.sprite.pivot.x - profile.centerX) / badge.sprite.pixelsPerUnit * scale,
+                (badge.sprite.pivot.y - profile.bottom) / badge.sprite.pixelsPerUnit * scale, 0);
             if (definition.id.EndsWith("_3"))
             {
                 var depth = root.AddComponent<RoomFurnitureDepth>();
