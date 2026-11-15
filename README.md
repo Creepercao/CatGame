@@ -8,9 +8,11 @@
 
 存档位于Windows用户的AppData/LocalLow/CatGameStudio/喵屋下；重新解压不清除已有进度。修改器改变运行状态，由游戏正常保存。
 
-Android ARM64 APK 见 [Android 预览版](https://github.com/Creepercao/CatGame/releases/tag/android-v1.0.0-preview.1)，附件包含 APK、安装说明和 SHA-256 校验文件。打开 APK 后按系统提示安装，也可用 `adb -s <设备序列号> install -r CatGame-Android.apk`。游戏包名为 `com.catgamestudio.catgame`，同签名的旧版可以覆盖安装。Android 版使用触摸操作，核心玩法离线运行。已在 MuMu、Android 14 模拟器和小米 22081212C / Android 15 完成验证；真机短时性能采样不代表其他设备、耗电表现或长期稳定性。
+Android ARM64 APK 见 [Android 1.0.2 预览版](https://github.com/Creepercao/CatGame/releases/tag/android-v1.0.2-preview.2)，附件包含 APK、安装说明和 SHA-256 校验文件。打开 APK 按系统提示安装，或用 `adb -s <设备序列号> install -r CatGame-Android.apk`。包名为 `com.catgamestudio.catgame`，与上一版签名一致，可覆盖安装保留进度。核心玩法离线运行、使用触摸操作。本版已在 Android 14 AVD 完成新档购买/强停重启及真实存档覆盖升级验收；项目旧版曾在 MuMu 和小米 22081212C / Android 15 验收，历史 v4 真机性能采样不代表本版新测或其他设备表现。
 
 新版普通保存会保留上一份已提交存档。主档缺失或损坏时会尝试恢复该备份，可能回退最近一轮保存后的进度。
+
+Android 1.0.2 在成功购买猫咪或用品时立即尝试保存，减少进度对暂停回调时机的依赖；价格与存档结构不变。
 
 Windows v1.0.1 对短暂的文件替换错误 1175 增加有限恢复：最多额外三次重试、每次等待 10ms；持续失败或其他错误仍记录到日志。既有存档路径和格式不变。
 
@@ -33,7 +35,7 @@ Windows v1.0.1 对短暂的文件替换错误 1175 增加有限恢复：最多�
 | Assets/Editor | 游戏场景生成、素材导入和 Windows / Android 构建入口 |
 | Packages / ProjectSettings | Unity依赖与工程配置 |
 
-此仓库只发布游戏工程。自动化测试、测试报告、QA Player脚本、CI编排、素材制作工具及个人学习资料留在本地，不进入发布历史。外置修改器作为可选二进制附于发行包；本机连接服务属于游戏集成支持，不是测试用例。可设置CATGAME_DEBUG_DISABLE=1关闭连接服务。
+此仓库只发布游戏工程。自动化测试、测试报告、QA Player脚本和CI证据在独立的[测试证据仓库](https://github.com/Creepercao/CatGame-test-evidence)维护，不进入本游戏仓库；素材制作工具和个人学习资料也不在本仓库。外置修改器作为可选二进制附于发行包；本机连接服务属于游戏集成支持，不是测试用例。可设置CATGAME_DEBUG_DISABLE=1关闭连接服务。
 
 ## 项目与素材说明
 
