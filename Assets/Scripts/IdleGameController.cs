@@ -83,7 +83,7 @@ namespace CatGame
             State.catHair -= price;
             row.count++;
             if (Roster != null) Roster.Rebuild(State, breedId);
-            MarkDirty();
+            PersistPurchase();
             Recalculate();
             RaiseChanged();
             return true;
@@ -102,7 +102,7 @@ namespace CatGame
 
             State.catHair -= price;
             row.level++;
-            MarkDirty();
+            PersistPurchase();
             Recalculate();
             RaiseChanged();
             return true;
@@ -111,9 +111,7 @@ namespace CatGame
         public bool BuyRocket()
         {
             if (ModalBlocked || !EndingRules.TryPurchase(State)) return false;
-            MarkDirty();
-            var save=SaveSystem.Instance;
-            if(save!=null && ReferenceEquals(save.State,State)) save.SaveNow();
+            PersistPurchase();
             RaiseChanged();
             return true;
         }
@@ -134,6 +132,15 @@ namespace CatGame
                 SaveSystem.Instance.MarkDirty();
                 _dirty = false;
             }
+        }
+
+        void PersistPurchase()
+        {
+            MarkDirty();
+            // Android may stop the process before Unity receives OnApplicationPause.
+            // Commit purchases before reporting completion, as for the ending rocket.
+            var save = SaveSystem.Instance;
+            if (save != null && ReferenceEquals(save.State, State)) save.SaveNow();
         }
 
         void RaiseChanged() { if (StateChanged != null) StateChanged(); }
