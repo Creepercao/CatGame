@@ -4,11 +4,11 @@
 
 ## 下载与运行
 
-在 [Windows v1.0.1](https://github.com/Creepercao/CatGame/releases/tag/v1.0.1) 下载 x64 ZIP，完整解压后运行CatGame.exe。无需安装Unity或Python。可选外置修改器位于Debugger/CatGameDebugger.exe，游戏运行时自动连接；主菜单、对话或暂停时不可修改，进入正常玩法后使用。请勿移动单个EXE而遗漏数据目录。
+在 [v1.1.0 跨平台发行](https://github.com/Creepercao/CatGame/releases/tag/v1.1.0) 下载 x64 ZIP，完整解压后运行CatGame.exe。无需安装Unity或Python。可选外置修改器位于Debugger/CatGameDebugger.exe，游戏运行时自动连接；主菜单、对话或暂停时不可修改，进入正常玩法后使用。请勿移动单个EXE而遗漏数据目录。
 
 存档位于Windows用户的AppData/LocalLow/CatGameStudio/喵屋下；重新解压不清除已有进度。修改器改变运行状态，由游戏正常保存。
 
-Android ARM64 APK 见 [Android 1.0.2 预览版](https://github.com/Creepercao/CatGame/releases/tag/android-v1.0.2-preview.2)，附件包含 APK、安装说明和 SHA-256 校验文件。打开 APK 按系统提示安装，或用 `adb -s <设备序列号> install -r CatGame-Android.apk`。包名为 `com.catgamestudio.catgame`，与上一版签名一致，可覆盖安装保留进度。核心玩法离线运行、使用触摸操作。本版已在 Android 14 AVD 完成新档购买/强停重启及真实存档覆盖升级验收；项目旧版曾在 MuMu 和小米 22081212C / Android 15 验收，历史 v4 真机性能采样不代表本版新测或其他设备表现。
+Android ARM64 APK 与 Windows ZIP 位于同一个 [v1.1.0 Release](https://github.com/Creepercao/CatGame/releases/tag/v1.1.0)，附件包含安装说明与 SHA-256。按系统提示安装 APK，或执行 `adb -s <设备序列号> install -r CatGame-Android.apk`。包名 `com.catgamestudio.catgame`，签名延续旧版，可覆盖安装保留进度。核心玩法离线运行，使用触摸操作。当前 1.1.0 在 Android 14 AVD 完成 code5→6 实际存档升级、三种比例摸猫、购买与结局、原生刘海安全区验收。本轮未重新测真机性能；旧版 MuMu、小米 Android 15 的历史结果不能代替本版设备兼容性。
 
 新版普通保存会保留上一份已提交存档。主档缺失或损坏时会尝试恢复该备份，可能回退最近一轮保存后的进度。
 
@@ -41,10 +41,10 @@ Windows v1.0.1 对短暂的文件替换错误 1175 增加有限恢复：最多�
 
 个人项目，使用 AI 辅助开发与部分素材制作。仓库未声明统一开源许可证，第三方素材的权利归原作者。Android 中文字体为 Noto Sans SC，随字体附带 SIL Open Font License。
 
-## 素材尺寸配置（1.1.0候选）
+## 素材尺寸配置（1.1.0）
 
 Unity菜单 `CatGame → Art → Select world art settings` 可定位 `Assets/Resources/Settings/WorldArtSettings.asset`。修改世界密度、脚线、参考画布或用品尺寸后，停止Play并执行 `CatGame → Art → Apply world art settings and rebuild Home`；更新导入与场景会保留素材GUID、切片ID和帧顺序。
 
 默认世界32PPU、猫画布64逻辑像素（2世界单位）、脚线距底部6像素，世界参考640×360。1920/2560标准屏分别3/4倍显示，其他比例使用Point完整取景回退；UI九宫格、CG与文字使用独立显示规则。用品按实际不透明范围落地，32格兼容素材自动换算。Park仍为旧坐标的未启用预览场景。
 
-后续跨平台发行将Windows ZIP（含可选外置修改器）、Android APK与校验说明放在同一个Release；上方既有版本链接保留到新候选完成验收再更新。
+本版统一世界素材的尺寸、脚点、地面锚点与Point采样规则；保持玩法数值和存档格式。已有发行与Git标签继续保留。源码、安装包与测试证据分别标明提交号及摘要；测试证据见独立仓库的F1报告。
