@@ -1,50 +1,77 @@
 # 喵屋 CatGame
 
-基于 Unity 的休闲放置游戏，支持 Windows 与 Android 横屏。摸猫收集猫毛，购买猫咪与用品，观看成就 CG。购买火箭触发结局后仍可继续游玩。
+**摸摸猫，攒点猫毛，陪它们慢慢长成一个热闹的家。**
+
+《喵屋》是一款可以直接下载游玩的2D养猫放置游戏Demo。猫咪会在等距小屋里漫游、打盹，被摸到时跳一下；你可以收集猫毛，迎接新伙伴、购买用品，再慢慢解锁成就与剧情。
+
+支持 **Windows x64** 和 **Android ARM64横屏**，核心玩法离线运行。
+
+[下载 v1.1.0 · Windows / Android](https://github.com/Creepercao/CatGame/releases/tag/v1.1.0)
+
+![喵屋主菜单插画](Assets/Resources/Art/Story/MenuMomo_v1.png)
+
+*主菜单插画。游戏内采用像素猫咪与等距房间，剧情使用独立CG插画。*
+
+## 在小屋里做些什么
+
+- **摸摸猫咪：**点击猫咪获得猫毛；睡着的猫会被唤醒并跳跃，之后继续漫游。
+- **迎接新伙伴：**攒够猫毛后购买猫咪，目前有11种猫咪可以收集。
+- **布置与成长：**购买、升级用品来增强产出，让资源积累得更快。
+- **轻松放置：**猫咪自行活动也会产生猫毛；离开游戏再回来，可以领取按50%收益计算、最多8小时的离线收益。
+- **收集成就与故事：**达成目标后解锁成就和对应CG，随时在设置界面查看猫咪图鉴与成就进度。
+- **准备一次出发：**后期购买火箭可触发结局，查看游玩统计；结局后可以继续留在小屋，也可以回到主菜单。
+
+## 怎么操作
+
+| 操作 | Windows | Android |
+| --- | --- | --- |
+| 摸猫、选择菜单 | 鼠标左键点击 | 手指点击 |
+| 浏览伙伴与用品 | 切换伙伴/用品并滚动 | 切换伙伴/用品并滑动 |
+| 继续观看CG后的游戏 | 点击CG画面任意位置 | 轻触CG画面任意位置 |
+| 设置、图鉴与成就 | 点击左上功能栏的“设置” | 点击左上功能栏的“设置” |
+
+首次新建存档时，第一只猫会通过对话介绍玩法。设置中的音量与数字显示方式会在主菜单和游戏内共用；Windows还可调整窗口分辨率。
 
 ## 下载与运行
 
-在 [v1.1.0 跨平台发行](https://github.com/Creepercao/CatGame/releases/tag/v1.1.0) 下载 x64 ZIP，完整解压后运行CatGame.exe。无需安装Unity或Python。可选外置修改器位于Debugger/CatGameDebugger.exe，游戏运行时自动连接；主菜单、对话或暂停时不可修改，进入正常玩法后使用。请勿移动单个EXE而遗漏数据目录。
+### Windows
 
-存档位于Windows用户的AppData/LocalLow/CatGameStudio/喵屋下；重新解压不清除已有进度。修改器改变运行状态，由游戏正常保存。
+1. 在[v1.1.0发行页面](https://github.com/Creepercao/CatGame/releases/tag/v1.1.0)下载 `CatGame-Windows-x64-v1.1.0.zip`。
+2. **完整解压**，保留 `CatGame_Data`、`UnityPlayer.dll` 和 `MonoBleedingEdge` 等配套文件。
+3. 双击 `CatGame.exe` 开始游玩，无需安装Unity或Python。
 
-Android ARM64 APK 与 Windows ZIP 位于同一个 [v1.1.0 Release](https://github.com/Creepercao/CatGame/releases/tag/v1.1.0)，附件包含安装说明与 SHA-256。按系统提示安装 APK，或执行 `adb -s <设备序列号> install -r CatGame-Android.apk`。包名 `com.catgamestudio.catgame`，签名延续旧版，可覆盖安装保留进度。核心玩法离线运行，使用触摸操作。当前 1.1.0 在 Android 14 AVD 完成 code5→6 实际存档升级、三种比例摸猫、购买与结局、原生刘海安全区验收。本轮未重新测真机性能；旧版 MuMu、小米 Android 15 的历史结果不能代替本版设备兼容性。
+ZIP内附有可选的外置修改器 `Debugger/CatGameDebugger.exe`。进入正常游戏后启动，它会自动连接；可用来调整运行中的资源与猫咪数量，修改结果由游戏正常保存。
 
-新版普通保存会保留上一份已提交存档。主档缺失或损坏时会尝试恢复该备份，可能回退最近一轮保存后的进度。
+### Android
 
-Android 1.0.2 在成功购买猫咪或用品时立即尝试保存，减少进度对暂停回调时机的依赖；价格与存档结构不变。
+1. 在同一个发行页面下载 `CatGame-Android.apk`。
+2. 按手机提示允许当前浏览器或文件管理器安装应用，然后安装APK。
+3. 打开“喵屋”，横屏游玩。
 
-Windows v1.0.1 对短暂的文件替换错误 1175 增加有限恢复：最多额外三次重试、每次等待 10ms；持续失败或其他错误仍记录到日志。既有存档路径和格式不变。
+更新已有版本时直接覆盖安装即可保留进度。安装说明和 `SHA256SUMS.txt` 与Windows、Android安装包一起提供。
 
-## 开发环境
+## 存档与继续游戏
 
-- Unity 2022.3.21f1。Windows 构建使用 Windows Build Support，Android 构建使用 Android Build Support 和 Unity 配套的 SDK、NDK、JDK。
-- 使用Unity Hub打开仓库根目录，等待包解析和资源导入。
-- 打开Assets/Scenes/MainMenu.unity后点击Play。
-- 选择菜单CatGame → 4. 构建 Windows 版，输出Build/CatGame.exe。
-- 切换到 Android 后选择 CatGame → 5. 构建 Android APK，输出 `Build/Android/CatGame.apk`。
-- 页面主要由C#与UiKit在运行时创建，游戏场景、素材导入参数和工程设置均保留。
+游戏会自动保存，也会在成功购买、切后台和正常退出时保存。再次启动后选择“继续游戏”即可回到原来的小屋。
 
-## 目录
+- **Windows存档：**`%USERPROFILE%/AppData/LocalLow/CatGameStudio/喵屋/`。
+- **Android存档：**保存在应用本地数据中；卸载应用可能清除进度，更新时请使用覆盖安装。
+- **备份恢复：**主存档缺失或损坏时会尝试读取上一份备份，可能回退最近一轮保存后的进度。
 
-| 路径 | 内容 |
-|---|---|
-| Assets/Scripts | 玩法、存档、UI、经济系统与本机修改器连接支持 |
-| Assets/Resources | 运行时加载的猫咪、房间、用品、CG和界面素材 |
-| Assets/Scenes | 主菜单、猫窝及公园预览场景 |
-| Assets/Editor | 游戏场景生成、素材导入和 Windows / Android 构建入口 |
-| Packages / ProjectSettings | Unity依赖与工程配置 |
+## 当前Demo
 
-此仓库只发布游戏工程。自动化测试、测试报告、QA Player脚本和CI证据在独立的[测试证据仓库](https://github.com/Creepercao/CatGame-test-evidence)维护，不进入本游戏仓库；素材制作工具和个人学习资料也不在本仓库。外置修改器作为可选二进制附于发行包；本机连接服务属于游戏集成支持，不是测试用例。可设置CATGAME_DEBUG_DISABLE=1关闭连接服务。
+当前发行版为 **v1.1.0**，Windows和Android位于同一个Release。包含猫窝、猫咪收集与用品升级、首次引导、成就CG、火箭结局、离线收益和存档恢复。
 
-## 项目与素材说明
+本版统一了猫咪、房间及用品的尺寸和落脚关系，并调整世界画面的像素显示。不同窗口尺寸下会优先保留完整取景，文字、界面和CG使用独立显示方式。
 
-个人项目，使用 AI 辅助开发与部分素材制作。仓库未声明统一开源许可证，第三方素材的权利归原作者。Android 中文字体为 Noto Sans SC，随字体附带 SIL Open Font License。
+欢迎反馈游玩问题。提交[Issue](https://github.com/Creepercao/CatGame/issues)时，可以附上游戏版本、设备与系统、发生步骤及截图，方便复现。
 
-## 素材尺寸配置（1.1.0）
+## 关于制作
 
-Unity菜单 `CatGame → Art → Select world art settings` 可定位 `Assets/Resources/Settings/WorldArtSettings.asset`。修改世界密度、脚线、参考画布或用品尺寸后，停止Play并执行 `CatGame → Art → Apply world art settings and rebuild Home`；更新导入与场景会保留素材GUID、切片ID和帧顺序。
+个人游戏Demo，使用 **Unity 2022.3.21f1 / C#** 开发，部分设计、代码与素材制作使用AI辅助。
 
-默认世界32PPU、猫画布64逻辑像素（2世界单位）、脚线距底部6像素，世界参考640×360。1920/2560标准屏分别3/4倍显示，其他比例使用Point完整取景回退；UI九宫格、CG与文字使用独立显示规则。用品按实际不透明范围落地，32格兼容素材自动换算。Park仍为旧坐标的未启用预览场景。
+想查看或修改源码，可以用对应版本Unity打开仓库，加载 `Assets/Scenes/MainMenu.unity` 后进入Play模式。
 
-本版统一世界素材的尺寸、脚点、地面锚点与Point采样规则；保持玩法数值和存档格式。已有发行与Git标签继续保留。源码、安装包与测试证据分别标明提交号及摘要；测试证据见独立仓库的F1报告。
+游戏的自动化测试与运行证据单独保存在[CatGame-test-evidence](https://github.com/Creepercao/CatGame-test-evidence)。
+
+仓库未声明统一开源许可证，第三方素材权利归原作者；Android中文字体Noto Sans SC附带SIL Open Font License。
