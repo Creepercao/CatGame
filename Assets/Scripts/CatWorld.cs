@@ -35,6 +35,7 @@ namespace CatGame
         public IdleGameController Economy { get; private set; }
         public PlatformGrid Platform { get; private set; }
         public Hud Hud { get; private set; }
+        public RoomThemeController RoomThemes { get; private set; }
         int _viewWidth, _viewHeight;
 
         void LateUpdate()
@@ -79,6 +80,11 @@ namespace CatGame
             if (SpawnCat)
             {
                 var state = SaveSystem.Instance != null ? SaveSystem.Instance.State : SaveSystem.CreateNewGame();
+                if(WalkSurface!=null && WalkSurface.Background!=null)
+                {
+                    RoomThemes=gameObject.AddComponent<RoomThemeController>();
+                    RoomThemes.Initialize(this,state);
+                }
                 Roster = gameObject.AddComponent<CatRoster>();
                 Roster.Initialize(state, new Vector3(FloorCenter.x, FloorCenter.y, 0f), FloorHalf, walkSurface: WalkSurface);
                 Economy = gameObject.AddComponent<IdleGameController>();

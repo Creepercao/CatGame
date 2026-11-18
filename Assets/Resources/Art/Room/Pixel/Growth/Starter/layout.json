@@ -1,0 +1,90 @@
+{
+  "width": 512,
+  "height": 288,
+  "cell": 64,
+  "cornerX": 256,
+  "cornerY": 40,
+  "wallSlope": 0.36,
+  "placements": [
+    {
+      "asset": "bookshelf_upper",
+      "x": 112,
+      "y": -2,
+      "group": "Bookshelf",
+      "groundX": 144,
+      "groundY": 125,
+      "wallDecor": false
+    },
+    {
+      "asset": "bookshelf_lower",
+      "x": 112,
+      "y": 62,
+      "group": "Bookshelf",
+      "groundX": 144,
+      "groundY": 125,
+      "wallDecor": false
+    },
+    {
+      "asset": "window",
+      "x": 352,
+      "y": -3,
+      "group": "Window",
+      "groundX": 0,
+      "groundY": 0,
+      "wallDecor": true
+    },
+    {
+      "asset": "plant",
+      "x": 184,
+      "y": 10,
+      "group": "Plant",
+      "groundX": 216,
+      "groundY": 68,
+      "wallDecor": false
+    },
+    {
+      "asset": "cat_bed",
+      "x": 252,
+      "y": 10,
+      "group": "Bed",
+      "groundX": 284,
+      "groundY": 70,
+      "wallDecor": false
+    },
+    {
+      "asset": "scratching_post",
+      "x": 452,
+      "y": 64,
+      "group": "CatTree",
+      "groundX": 484,
+      "groundY": 126,
+      "wallDecor": false
+    }
+  ],
+  "obstacles": [
+    {
+      "x": 118,
+      "y": 110,
+      "width": 52,
+      "height": 15
+    },
+    {
+      "x": 204,
+      "y": 60,
+      "width": 25,
+      "height": 10
+    },
+    {
+      "x": 257,
+      "y": 61,
+      "width": 54,
+      "height": 11
+    },
+    {
+      "x": 458,
+      "y": 117,
+      "width": 52,
+      "height": 10
+    }
+  ]
+}

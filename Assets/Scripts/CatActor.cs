@@ -54,6 +54,32 @@ namespace CatGame
             PickNewTarget(0.8f); // Surface attachment must preserve Setup's first-roam distance.
         }
 
+        /// <summary>Preserve a valid foot; only move actors covered by newly placed furniture.</summary>
+        public bool RevalidateRoom()
+        {
+            if(WalkSurface==null)return false;
+            var half=SafeHalfAxes();var center=SafeCenter();
+            Func<Vector3,bool> allowed=p=>Mathf.Abs(p.x-center.x)<=half.x && Mathf.Abs(p.y-center.y)<=half.y &&
+                WalkSurface.Contains(p+Vector3.up*GroundOffset) &&
+                WalkSurface.Contains(SnapPosition(p)+Vector3.up*GroundOffset);
+            bool moved=false;
+            if(!allowed(_pos))
+            {
+                Vector3 found=center;bool selected=false;
+                for(int ring=1;ring<=128 && !selected;ring++)
+                    for(int direction=0;direction<16;direction++)
+                    {
+                        float angle=direction*Mathf.PI/8;
+                        var candidate=_pos+new Vector3(Mathf.Cos(angle),Mathf.Sin(angle),0)*(.125f*ring);
+                        if(!allowed(candidate))continue;
+                        found=candidate;selected=true;break;
+                    }
+                if(!selected && !allowed(found))throw new InvalidOperationException("Room has no safe cat position");
+                _pos=found;_moving=false;_resting=false;_sleepAmount=0;_pauseUntil=Time.time+.25f;moved=true;
+            }
+            PickNewTarget(.8f);ApplyVisual();return moved;
+        }
+
         bool CanReach(Vector3 candidate)
         {
             if (WalkSurface == null) return true;

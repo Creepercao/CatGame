@@ -69,6 +69,13 @@ namespace CatGame
             return _records.Count == 0 ? null : _records[0].actor;
         }
 
+        public int RevalidateRoom()
+        {
+            int moved=0;
+            foreach(var record in _records)if(record.actor!=null && record.actor.RevalidateRoom())moved++;
+            return moved;
+        }
+
         public int VisibleCountFor(string breedId)
         {
             int count = 0;
