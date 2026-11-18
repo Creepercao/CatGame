@@ -6,7 +6,7 @@
 
 支持 **Windows x64** 和 **Android ARM64横屏**，核心玩法离线运行。
 
-[下载 v1.1.0 · Windows / Android](https://github.com/Creepercao/CatGame/releases/tag/v1.1.0)
+[下载 v1.2.0 · Windows / Android](https://github.com/Creepercao/CatGame/releases/tag/v1.2.0)
 
 ![喵屋主菜单插画](Assets/Resources/Art/Story/MenuMomo_v1.png)
 
@@ -17,6 +17,7 @@
 - **摸摸猫咪：**点击猫咪获得猫毛；睡着的猫会被唤醒并跳跃，之后继续漫游。
 - **迎接新伙伴：**攒够猫毛后购买猫咪，目前有11种猫咪可以收集。
 - **布置与成长：**购买、升级用品来增强产出，让资源积累得更快。
+- **看小屋成长：**累计产出达到10万猫毛后，暖木小屋会淡入切换为伙伴客厅，添上沙发、双层猫架与窗帘；猫咪和用品进度保留，花掉猫毛也不会退回旧房间。
 - **轻松放置：**猫咪自行活动也会产生猫毛；离开游戏再回来，可以领取按50%收益计算、最多8小时的离线收益。
 - **收集成就与故事：**达成目标后解锁成就和对应CG，随时在设置界面查看猫咪图鉴与成就进度。
 - **准备一次出发：**后期购买火箭可触发结局，查看游玩统计；结局后可以继续留在小屋，也可以回到主菜单。
@@ -36,7 +37,7 @@
 
 ### Windows
 
-1. 在[v1.1.0发行页面](https://github.com/Creepercao/CatGame/releases/tag/v1.1.0)下载 `CatGame-Windows-x64-v1.1.0.zip`。
+1. 在[v1.2.0发行页面](https://github.com/Creepercao/CatGame/releases/tag/v1.2.0)下载 `CatGame-Windows-x64-v1.2.0.zip`。
 2. **完整解压**，保留 `CatGame_Data`、`UnityPlayer.dll` 和 `MonoBleedingEdge` 等配套文件。
 3. 双击 `CatGame.exe` 开始游玩，无需安装Unity或Python。
 
@@ -60,9 +61,9 @@ ZIP内附有可选的外置修改器 `Debugger/CatGameDebugger.exe`。进入正�
 
 ## 当前Demo
 
-当前发行版为 **v1.1.0**，Windows和Android位于同一个Release。包含猫窝、猫咪收集与用品升级、首次引导、成就CG、火箭结局、离线收益和存档恢复。
+当前发行版为 **v1.2.0**，Windows和Android位于同一个Release。包含猫窝、猫咪收集与用品升级、首次引导、成就CG、火箭结局、离线收益和存档恢复。
 
-本版统一了猫咪、房间及用品的尺寸和落脚关系，并调整世界画面的像素显示。不同窗口尺寸下会优先保留完整取景，文字、界面和CG使用独立显示方式。
+本版新增两套同等距结构的像素房间。房间随累计产出成长，CG播放完才开始过渡；旧存档及离线收益达到门槛时会进入对应房间。后续量级暂时沿用伙伴客厅，尚未制作更多房间主题。沿用此前统一的世界像素尺寸和落脚关系。
 
 欢迎反馈游玩问题。提交[Issue](https://github.com/Creepercao/CatGame/issues)时，可以附上游戏版本、设备与系统、发生步骤及截图，方便复现。
 
@@ -71,6 +72,8 @@ ZIP内附有可选的外置修改器 `Debugger/CatGameDebugger.exe`。进入正�
 个人游戏Demo，使用 **Unity 2022.3.21f1 / C#** 开发，部分设计、代码与素材制作使用AI辅助。
 
 想查看或修改源码，可以用对应版本Unity打开仓库，加载 `Assets/Scenes/MainMenu.unity` 后进入Play模式。
+
+可通过 `CatGame` 菜单选择房间主题配置，或在 `Assets/Resources/Settings/RoomThemeSettings.asset` 中调整累计产出门槛与过渡时长。主题资源包含独立家具片组、地面脚点和占地配置；添加主题时需一起维护，避免猫咪穿过家具。
 
 游戏的自动化测试与运行证据单独保存在[CatGame-test-evidence](https://github.com/Creepercao/CatGame-test-evidence)。
 
