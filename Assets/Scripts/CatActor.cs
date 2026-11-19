@@ -20,6 +20,8 @@ namespace CatGame
         public static Vector3 LastPosition;
 
         public SpriteRenderer Renderer { get; private set; }
+        static Sprite _contactShadowSprite;
+        SpriteRenderer _contactShadow;
 
         CatBreed _breed;
         float _frameClock;
@@ -43,6 +45,10 @@ namespace CatGame
         bool _oneShot;
         bool _resting;
         public const float SleepDelay = 2f;
+        const float FurnitureVisitRadius = 5.5f;
+        PlatformGrid.FurnitureSpot _furniture;
+        bool _steppingIntoUsePoint, _usingFurniture;
+        float _nextFurnitureVisit;
         Vector2 _visualPadding;
         float _visualCenterY;
         public RoomWalkSurface WalkSurface { get; private set; }
@@ -50,7 +56,22 @@ namespace CatGame
 
         public void SetWalkSurface(RoomWalkSurface surface)
         {
+            ReleaseFurniture();
             WalkSurface = surface;
+            if (surface != null && _contactShadow == null)
+            {
+                if (_contactShadowSprite == null)
+                    _contactShadowSprite = Resources.Load<Sprite>("Art/Room/Pixel/cat_shadow");
+                if (_contactShadowSprite != null)
+                {
+                    var shadow = new GameObject("ContactShadow");
+                    shadow.transform.SetParent(transform, false);
+                    _contactShadow = shadow.AddComponent<SpriteRenderer>();
+                    _contactShadow.sprite = _contactShadowSprite;
+                    _contactShadow.sortingOrder = -95;
+                }
+            }
+            if (_contactShadow != null) _contactShadow.enabled = surface != null;
             PickNewTarget(0.8f); // Surface attachment must preserve Setup's first-roam distance.
         }
 
@@ -58,6 +79,7 @@ namespace CatGame
         public bool RevalidateRoom()
         {
             if(WalkSurface==null)return false;
+            ReleaseFurniture();
             var half=SafeHalfAxes();var center=SafeCenter();
             Func<Vector3,bool> allowed=p=>Mathf.Abs(p.x-center.x)<=half.x && Mathf.Abs(p.y-center.y)<=half.y &&
                 WalkSurface.Contains(p+Vector3.up*GroundOffset) &&
@@ -80,12 +102,32 @@ namespace CatGame
             PickNewTarget(.8f);ApplyVisual();return moved;
         }
 
-        bool CanReach(Vector3 candidate)
+        bool CanReach(Vector3 candidate) => CanReach(_pos, candidate);
+
+        bool CanReach(Vector3 from, Vector3 to)
         {
             if (WalkSurface == null) return true;
             var offset = Vector3.up * GroundOffset;
-            return WalkSurface.AllowsSegment(_pos + offset, candidate + offset)
-                && WalkSurface.AllowsSegment(SnapPosition(_pos) + offset, SnapPosition(candidate) + offset);
+            return WalkSurface.AllowsSegment(from + offset, to + offset)
+                && WalkSurface.AllowsSegment(SnapPosition(from) + offset, SnapPosition(to) + offset);
+        }
+
+        Vector3 PositionAtFoot(Vector3 foot) => foot - Vector3.up * GroundOffset;
+
+        bool IsInsideRoamArea(Vector3 position)
+        {
+            var delta = position - SafeCenter();
+            var half = SafeHalfAxes();
+            return Mathf.Abs(delta.x) <= half.x && Mathf.Abs(delta.y) <= half.y;
+        }
+
+        internal bool CanVisitFurniture(PlatformGrid.FurnitureSpot spot)
+        {
+            if (!HasClip(spot.Action) || (spot.Action == ActionNames.Sleep && !_breed.UseSleepWhileResting)) return false;
+            var front = PositionAtFoot(spot.Front);
+            var use = PositionAtFoot(spot.UsePoint);
+            return IsInsideRoamArea(front) && IsInsideRoamArea(use)
+                && CanReach(front) && CanReach(front, use);
         }
 
         static Vector3 SnapPosition(Vector3 position)
@@ -107,6 +149,7 @@ namespace CatGame
             get
             {
                 if (_forced) return _action;
+                if (_usingFurniture) return _furniture.Action;
                 if (_resting && !_moving && _sleepAmount >= SleepDelay &&
                     _breed != null && _breed.UseSleepWhileResting && HasClip(ActionNames.Sleep))
                     return ActionNames.Sleep;
@@ -118,6 +161,7 @@ namespace CatGame
 
         public bool IsForced { get { return _forced; } }
         public bool IsWalking { get { return _moving && !_forced; } }
+        public bool IsRestingOnBed => _usingFurniture && _furniture.Action == ActionNames.Sleep;
         public Vector3 Position { get { return _pos; } }
         public Vector2 FloorHalfAxes { get { return _halfAxes; } }
         public CatBreed Breed { get { return _breed; } }
@@ -148,6 +192,7 @@ namespace CatGame
         /// <summary>把活动范围改成"以 center 为中心、halfAxes 为半宽半高"的矩形。</summary>
         public void SetFloor(Vector3 center, Vector2 halfAxes)
         {
+            ReleaseFurniture();
             _home = center;
             _halfAxes = halfAxes;
             _pos = SafeCenter();
@@ -157,6 +202,7 @@ namespace CatGame
 
         public void Bind(CatBreed breed)
         {
+            ReleaseFurniture();
             _resting = false;
             _sleepAmount = 0f;
             _breed = breed;
@@ -192,6 +238,7 @@ namespace CatGame
         {
             if (!ActionNames.IsValid(action) || !HasClip(action)) return false;
 
+            ReleaseFurniture();
             _forced = true;
             _resting = false;
             _oneShot = false;
@@ -218,6 +265,7 @@ namespace CatGame
         /// <summary>回到自动模式（自己漫游 + 长时间没人管会趴下睡）。</summary>
         public void ResumeAuto()
         {
+            ReleaseFurniture();
             _resting = false;
             _sleepAmount = 0f;
             _forced = false;
@@ -239,6 +287,7 @@ namespace CatGame
         public bool PlayOneShot(string action)
         {
             if (!ActionNames.IsValid(action) || !HasClip(action)) return false;
+            ReleaseFurniture();
             _forced = true;
             _resting = false;
             _oneShot = true;
@@ -274,10 +323,8 @@ namespace CatGame
         Sprite[] ActiveClip()
         {
             if (_breed == null) return null;
-            if (_forced && HasClip(_action)) return _breed.Clip(_action);
-            if (CurrentAction == ActionNames.Sleep && HasClip(ActionNames.Sleep)) return _breed.Sleep;
-            if (CurrentAction == ActionNames.Walk && HasClip(ActionNames.Walk)) return _breed.Walk;
-            return _breed.Idle;
+            var clip = _breed.Clip(CurrentAction);
+            return clip != null && clip.Length > 0 ? clip : _breed.Idle;
         }
 
         void Update()
@@ -314,9 +361,16 @@ namespace CatGame
 
         void Wander(float dt)
         {
+            if (_furniture != null && StepFurnitureVisit(dt)) return;
             if (Time.time < _pauseUntil)
             {
                 _moving = false;
+                return;
+            }
+
+            if (!_moving && TryStartFurnitureVisit())
+            {
+                StepFurnitureVisit(dt);
                 return;
             }
 
@@ -339,6 +393,71 @@ namespace CatGame
             MoveTo(_pos + step / dist * Mathf.Min(_speed * dt, dist));
             _facing = step.x >= 0f ? 1f : -1f;
         }
+
+        bool TryStartFurnitureVisit()
+        {
+            if (Time.time < _nextFurnitureVisit || WalkSurface == null || WalkSurface.Platform == null ||
+                _breed == null) return false;
+            _nextFurnitureVisit = Time.time + 3f;
+            _furniture = WalkSurface.Platform.ReserveNearbyFurniture(this, FurnitureVisitRadius);
+            if (_furniture == null) return false;
+
+            _resting = false;
+            _sleepAmount = 0f;
+            _nextFurnitureVisit = Time.time + UnityEngine.Random.Range(22f, 36f);
+            return true;
+        }
+
+        bool StepFurnitureVisit(float dt)
+        {
+            if (!_furniture.IsPlaced || (_usingFurniture && Time.time >= _pauseUntil))
+            {
+                ReleaseFurniture();
+                PickNewTarget(.8f);
+                return false;
+            }
+            if (_usingFurniture) return true;
+
+            var goal = PositionAtFoot(_steppingIntoUsePoint ? _furniture.UsePoint : _furniture.Front);
+            var next = Vector3.MoveTowards(_pos, goal, (_steppingIntoUsePoint ? 2.2f : _speed) * dt);
+            if (!IsInsideRoamArea(goal) || !CanReach(next))
+            {
+                ReleaseFurniture();
+                PickNewTarget(.8f);
+                return false;
+            }
+            if (Mathf.Abs(goal.x - _pos.x) > .02f) _facing = goal.x > _pos.x ? 1f : -1f;
+            _pos = next;
+            _moving = true;
+            if (_pos != goal) return true;
+
+            if (!_steppingIntoUsePoint)
+                _steppingIntoUsePoint = true;
+            else
+            {
+                _moving = false;
+                _usingFurniture = true;
+                if (_furniture.Facing != 0f) _facing = _furniture.Facing;
+                _pauseUntil = Time.time + (_furniture.Action == ActionNames.Sleep
+                    ? UnityEngine.Random.Range(8f, 14f) : UnityEngine.Random.Range(3.5f, 5f));
+            }
+            return true;
+        }
+
+        void ReleaseFurniture()
+        {
+            if (_furniture == null) return;
+            _furniture.Occupant = null;
+            _furniture = null;
+            _steppingIntoUsePoint = false;
+            _usingFurniture = false;
+            _resting = false;
+            _moving = false;
+            _sleepAmount = 0f;
+            _pauseUntil = Time.time;
+        }
+
+        void OnDisable() => ReleaseFurniture();
 
         void PickNewTarget(float minDist = 0f)
         {
@@ -397,7 +516,8 @@ namespace CatGame
                 case ActionNames.Run: return 8f;
                 case ActionNames.Sleep: return 2.5f;
                 case ActionNames.Jump: return 16f;
-                case ActionNames.Eat: return 9f;
+                case ActionNames.Eat: return _breed != null && _breed.UseWalkWhileMoving ? 7f : 9f;
+                case ActionNames.Scratch: return 8f;
                 case ActionNames.Attack: return 13f;
                 default: return _breed != null && _breed.UseWalkWhileMoving ? 7f : (_sleepAmount > 0.55f ? 2.2f : 7f);
             }
@@ -420,6 +540,13 @@ namespace CatGame
             transform.position = snapped;
 
             transform.localScale = new Vector3(_facing * _visualScale, _visualScale, 1f);
+            if (_contactShadow != null)
+            {
+                _contactShadow.enabled = WalkSurface != null && !IsRestingOnBed;
+                _contactShadow.transform.localPosition = new Vector3(0f, GroundOffset / _visualScale, 0f);
+                _contactShadow.transform.localScale = CurrentAction == ActionNames.Sleep ? new Vector3(1.08f, 1f, 1f) : Vector3.one;
+                _contactShadow.color = CurrentAction == ActionNames.Jump ? new Color(1f, 1f, 1f, .68f) : Color.white;
+            }
 
             if (_clickCollider != null && Renderer.sprite != null)
             {

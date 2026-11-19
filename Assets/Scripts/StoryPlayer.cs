@@ -16,6 +16,7 @@ namespace CatGame
         int _pointerFrame=-1;
         public bool ShowingStatistics { get; private set; }
         public const string EndingId="rocket_ending";
+        public const string EndingIllustration="EndingRocket_v2";
         public string CurrentId { get; private set; }
         public bool IsOpen { get { return _overlay!=null; } }
         public double LastOpenMilliseconds { get; private set; }
@@ -28,13 +29,13 @@ namespace CatGame
             if(_gate.IsBusy) return;
             bool ending=_state.rocketPurchased && !_state.endingCompleted;
             if(!ending && _state.pendingStoryEvents.Count==0) return;
-            var story=ending ? new StoryDefinition(EndingId,"向星星出发","无论走多远，这里永远是猫猫的家。","EndingRocket_v1") : StoryCatalog.Find(_state.pendingStoryEvents[0]);
+            var story=ending ? new StoryDefinition(EndingId,"向星星出发","无论走多远，这里永远是猫猫的家。",EndingIllustration) : StoryCatalog.Find(_state.pendingStoryEvents[0]);
             if(story==null) return; // Never silently consume an unsupported saved event.
             long started=System.Diagnostics.Stopwatch.GetTimestamp();
             var sprite=Resources.Load<Sprite>(story.resource);
             if(sprite==null || !_gate.TryAcquire(this)) return;
             CurrentId=story.id;
-            var dim=UiKit.Panel(_root,"StoryCG",new Color(.08f,.06f,.05f,.98f),false);
+            var dim=UiKit.Panel(_root,"StoryCG",new Color32(37,32,31,255),false);
             dim.rectTransform.Stretch(); _overlay=dim.gameObject;
             var anywhere=dim.gameObject.AddComponent<Button>();
             anywhere.transition=Selectable.Transition.None; anywhere.navigation=new Navigation{mode=Navigation.Mode.None};
@@ -43,13 +44,16 @@ namespace CatGame
             frame.anchorMin=new Vector2(0,.23f); frame.anchorMax=Vector2.one;
             frame.offsetMin=new Vector2(24,8); frame.offsetMax=new Vector2(-24,-24);
             var art=frame.gameObject.AddComponent<Image>(); art.sprite=sprite; art.preserveAspect=true; art.raycastTarget=false;
+            var captionRule=UiKit.Panel(dim.transform,"CaptionRule",new Color32(173,193,165,255),false);
+            captionRule.raycastTarget=false;
+            captionRule.rectTransform.At(new Vector2(.5f,.228f),new Vector2(.5f,.5f),Vector2.zero,new Vector2(64,3));
             var title=UiKit.Label(dim.transform,"Title",story.title,32,UiKit.Cream,TextAnchor.MiddleCenter,FontStyle.Bold);
             title.rectTransform.anchorMin=new Vector2(0,.16f); title.rectTransform.anchorMax=new Vector2(1,.22f);
             title.rectTransform.offsetMin=new Vector2(24,0); title.rectTransform.offsetMax=new Vector2(-24,0);
-            var caption=UiKit.Label(dim.transform,"Caption",story.caption,24,UiKit.Cream,TextAnchor.MiddleCenter);
+            var caption=UiKit.Label(dim.transform,"Caption",story.caption,24,new Color32(228,209,191,255),TextAnchor.MiddleCenter);
             caption.rectTransform.anchorMin=new Vector2(0,.10f); caption.rectTransform.anchorMax=new Vector2(1,.16f);
             caption.rectTransform.offsetMin=new Vector2(24,0); caption.rectTransform.offsetMax=new Vector2(-24,0);
-            var next=UiKit.Btn(dim.transform,"Btn_close_CG",ending?"点击任意处查看旅程":"点击任意处继续",new Vector2(360,60),UiKit.Coral,UiKit.Cream,24,CompleteFromPointer);
+            var next=UiKit.Btn(dim.transform,"Btn_close_CG",ending?"点击任意处查看旅程":"点击任意处继续",new Vector2(360,60),UiKit.Coral,UiKit.Ink,24,CompleteFromPointer);
             next.GetComponent<RectTransform>().At(new Vector2(.5f,0),new Vector2(.5f,0),new Vector2(0,20),new Vector2(360,60));
             next.navigation=new Navigation{mode=Navigation.Mode.None};
             LastOpenMilliseconds=(System.Diagnostics.Stopwatch.GetTimestamp()-started)*1000.0/System.Diagnostics.Stopwatch.Frequency;

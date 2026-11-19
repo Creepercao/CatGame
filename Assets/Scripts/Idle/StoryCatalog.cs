@@ -13,7 +13,7 @@ namespace CatGame.Idle
         public static readonly StoryDefinition[] All = {
             new StoryDefinition("first_tuft","第一撮毛","小小一撮柔软的毛，是这个家最初的收藏。","AchievementFirstTuft_v1"),
             new StoryDefinition("ten_thousand","猫毛过万","不知不觉，小小的收藏已经装满了一篮。","AchievementTenThousand_v1"),
-            new StoryDefinition("hundred_thousand","十万个为什么","猫毛越攒越多，好奇心也跟着长大。","AchievementHundredThousand_v1"),
+            new StoryDefinition("hundred_thousand","十万个为什么","攒了这么多猫毛，猫窝也有了新模样。","AchievementHundredThousand_v2"),
             new StoryDefinition("millionaire","百万富翁","最珍贵的财富，是这些毛茸茸的日常。","AchievementMillionaire_v1"),
             new StoryDefinition("lots_of_points","亿点点","只是亿点点喜欢，就让猫毛堆成了小山。","AchievementLotsOfPoints_v1"),
             new StoryDefinition("unstoppable","人类已经阻止不了","从一间小屋开始，温柔正在占领整座城市。","AchievementUnstoppable_v1"),
@@ -24,7 +24,7 @@ namespace CatGame.Idle
             new StoryDefinition("three_breeds","集齐三色","第一批伙伴到来，猫窝有了新的颜色。","MilestoneThree_v1"),
             new StoryDefinition("six_breeds","六种颜色","多一点热闹，也多一点陪伴。","MilestoneSix_v1"),
             new StoryDefinition("all_breeds","十一色猫","每一种颜色，都是这个家不可缺少的一部分。","MilestoneEleven_v1"),
-            new StoryDefinition("first_click","第一次撸猫","第一次摸摸，换来一声轻轻的呼噜。","AchievementFirstClick_v1"),
+            new StoryDefinition("first_click","第一次撸猫","第一次摸摸，换来一声轻轻的呼噜。","AchievementFirstClick_v2"),
             new StoryDefinition("thousand_clicks","撸到手酸","第一千次摸摸，依然是最喜欢的那一下。","AchievementThousandClicks_v1"),
             new StoryDefinition("max_scratcher","满级抓板","这块抓板，已经见证了最认真的磨爪时光。","AchievementMaxScratcher_v1"),
             new StoryDefinition("stage_two","街区新邻居","门铃响起，穿着黑白礼服的新朋友来报到了。","AchievementNewNeighbor_v1"),

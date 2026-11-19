@@ -9,13 +9,20 @@ namespace CatGame
     /// <summary>Player-facing cat room HUD: economy summary, stacked cats, and purchase rows.</summary>
     public sealed class Hud : MonoBehaviour
     {
-        sealed class CatCard { public Button button; public Text text; public string id; }
-        sealed class ItemCard { public Button button; public Text text; public string id; }
+        sealed class ShopCard
+        {
+            public Button Button;
+            public Image Background, Badge;
+            public Text Count, Detail, Status;
+            public string Id;
+        }
         Text _title, _metrics, _stackLabel;
         AchievementToast _toast;
         PausePanel _pausePanel;
         GameObject _offlinePanel;
-        RectTransform _contentRoot;
+        RectTransform _contentRoot, _sidebar;
+        public float SidebarScreenRight => _sidebar == null ? 0f :
+            RectTransformUtility.WorldToScreenPoint(null, _sidebar.TransformPoint(new Vector2(_sidebar.rect.xMax, 0f))).x;
         public ModalGate Modals { get; private set; }
         public IntroDialogue Intro { get; private set; }
         public StoryPlayer Stories { get; private set; }
@@ -24,8 +31,15 @@ namespace CatGame
         Text _rocketText;
         readonly List<Image> _stackPortraits = new List<Image>();
         readonly List<Text> _stackAmounts = new List<Text>();
-        readonly List<CatCard> _catCards = new List<CatCard>();
-        readonly List<ItemCard> _itemCards = new List<ItemCard>();
+        readonly List<ShopCard> _catCards = new List<ShopCard>();
+        readonly List<ShopCard> _itemCards = new List<ShopCard>();
+        static readonly Color ReadyPaper = new Color32(245, 239, 222, 255);
+        static readonly Color ReadyBadge = new Color32(211, 231, 217, 255);
+        static readonly Color ShortPaper = new Color32(245, 231, 216, 255);
+        static readonly Color ShortBadge = new Color32(238, 211, 189, 255);
+        static readonly Color FullPaper = new Color32(232, 233, 229, 255);
+        static readonly Color FullBadge = new Color32(217, 221, 217, 255);
+        static readonly Color DetailInk = new Color32(116, 93, 75, 255);
         float _refresh;
 
         IdleGameController Economy { get { return CatWorld.I != null ? CatWorld.I.Economy : null; } }
@@ -48,6 +62,7 @@ namespace CatGame
             Rocket=gameObject.AddComponent<RocketPurchase>();
             Rocket.Initialize(root,Economy,Modals);
             var sidebar = UiKit.Panel(root, "Sidebar", UiKit.Cream);
+            _sidebar = sidebar.rectTransform;
             sidebar.rectTransform.anchorMin = Vector2.zero;
             sidebar.rectTransform.anchorMax = new Vector2(0f, 1f);
             sidebar.rectTransform.pivot = Vector2.zero;
@@ -176,11 +191,15 @@ namespace CatGame
             scroll.movementType = ScrollRect.MovementType.Clamped;
             scroll.scrollSensitivity = 40;
             var catHeading = ShopHeading(content, "CatHeading", "猫咪伙伴");
-            foreach (var definition in CatCatalog.All) _catCards.Add(CreateCatCard(content, definition));
+            foreach (var definition in CatCatalog.All)
+                _catCards.Add(CreateShopCard(content, "Cat_", definition.id, definition.name,
+                    CatVisualLibrary.Load(definition).Portrait, () => Economy?.BuyCat(definition.id)));
             var divider = UiKit.Panel(content, "Divider", UiKit.PanelDark, false);
             divider.rectTransform.sizeDelta = new Vector2(360,2);
             var itemHeading = ShopHeading(content, "ItemHeading", "猫窝用品");
-            foreach (var definition in ItemCatalog.All) _itemCards.Add(CreateItemCard(content, definition));
+            foreach (var definition in ItemCatalog.All)
+                _itemCards.Add(CreateShopCard(content, "Item_", definition.id, definition.name,
+                    ItemVisualLibrary.Load(definition.id), () => Economy?.BuyItem(definition.id)));
             var rocketHeading=ShopHeading(content,"RocketHeading","星星之约");
             _rocketButton=UiKit.Btn(content,"Rocket","",new Vector2(360,120),UiKit.PanelC,UiKit.Ink,16,()=>Rocket.Open());
             var rocketIcon=UiKit.Node("Icon",_rocketButton.transform).At(new Vector2(0,.5f),new Vector2(0,.5f),new Vector2(12,0),new Vector2(64,64)).gameObject.AddComponent<Image>();
@@ -193,6 +212,15 @@ namespace CatGame
             items.GetComponent<RectTransform>().At(new Vector2(0,1),new Vector2(0,1),new Vector2(150,-14),new Vector2(112,44));
             var rocket = UiKit.Btn(panel.transform,"Btn_shop_rocket","火箭",new Vector2(112,44),UiKit.PanelC,UiKit.Ink,20,()=>scroll.Focus(rocketHeading));
             rocket.GetComponent<RectTransform>().At(new Vector2(0,1),new Vector2(0,1),new Vector2(280,-14),new Vector2(112,44));
+            var tabs = new[] { cats.image, items.image, rocket.image };
+            cats.image.color = ReadyBadge;
+            scroll.onValueChanged.AddListener(_ =>
+            {
+                float offset = content.anchoredPosition.y + 1f;
+                int section = offset >= scroll.FocusOffset(rocketHeading) ? 2 :
+                    offset >= scroll.FocusOffset(itemHeading) ? 1 : 0;
+                for (int i = 0; i < tabs.Length; i++) tabs[i].color = i == section ? ReadyBadge : UiKit.PanelC;
+            });
         }
 
         static RectTransform ShopHeading(Transform content,string name,string text)
@@ -202,31 +230,31 @@ namespace CatGame
             return heading.rectTransform;
         }
 
-        CatCard CreateCatCard(Transform parent, CatDefinition definition)
+        ShopCard CreateShopCard(Transform parent, string prefix, string id, string displayName, Sprite sprite, Action buy)
         {
-            var button = UiKit.Btn(parent, "Cat_" + definition.id, "", new Vector2(360f, 104f), UiKit.PanelC, UiKit.Ink, 16,
-                () => { var e = Economy; if (e != null) e.BuyCat(definition.id); });
-            var portrait = UiKit.Node("Portrait", button.transform).At(new Vector2(0f, 0.5f), new Vector2(0f, 0.5f), new Vector2(9f, 0f), new Vector2(64f, 64f)).gameObject.AddComponent<Image>();
-            portrait.sprite = CatVisualLibrary.Load(definition).Portrait;
+            var button = UiKit.Btn(parent, prefix + id, "", new Vector2(360f, 104f), ReadyPaper, UiKit.Ink, 16, buy);
+            var colors = button.colors;
+            colors.disabledColor = Color.white;
+            button.colors = colors;
+            var anchor = new Vector2(0f, .5f);
+            string node = prefix == "Cat_" ? "Portrait" : "Icon";
+            var portrait = UiKit.Node(node, button.transform).At(anchor, anchor, new Vector2(8f, 0f), new Vector2(82f, 82f)).gameObject.AddComponent<Image>();
+            portrait.sprite = sprite;
             portrait.preserveAspect = true;
-            var label = UiKit.Label(button.transform, "Info", "", 15, UiKit.Ink, TextAnchor.MiddleLeft, FontStyle.Bold);
-            label.rectTransform.At(new Vector2(0f, 0.5f), new Vector2(0f, 0.5f), new Vector2(78f, 0f), new Vector2(272f, 92f));
-            return new CatCard { button = button, text = label, id = definition.id };
-        }
-
-        ItemCard CreateItemCard(Transform parent, ItemDefinition definition)
-        {
-            var button = UiKit.Btn(parent, "Item_" + definition.id, "", new Vector2(360f, 104f), UiKit.PanelC, UiKit.Ink, 16,
-                () => { var e = Economy; if (e != null) e.BuyItem(definition.id); });
-            var iconNode = UiKit.Node("Icon", button.transform);
-            iconNode.At(new Vector2(0f, 0.5f), new Vector2(0f, 0.5f), new Vector2(16f, 0f), new Vector2(64f, 64f));
-            var icon = iconNode.gameObject.AddComponent<Image>();
-            icon.sprite = ItemVisualLibrary.Load(definition.id);
-            icon.preserveAspect = true;
-            icon.raycastTarget = false;
-            var label = UiKit.Label(button.transform, "Info", "", 15, UiKit.Ink, TextAnchor.MiddleLeft, FontStyle.Bold);
-            label.rectTransform.At(new Vector2(0f, 0.5f), new Vector2(0f, 0.5f), new Vector2(82f, 0f), new Vector2(268f, 92f));
-            return new ItemCard { button = button, text = label, id = definition.id };
+            portrait.raycastTarget = false;
+            var name = UiKit.Label(button.transform, "Name", displayName, 22, UiKit.Ink, TextAnchor.MiddleLeft, FontStyle.Bold);
+            name.rectTransform.At(anchor, anchor, new Vector2(98f, 28f), new Vector2(180f, 30f));
+            var count = UiKit.Label(button.transform, "Count", "", 14, DetailInk, TextAnchor.MiddleRight);
+            count.rectTransform.At(anchor, anchor, new Vector2(270f, 28f), new Vector2(74f, 26f));
+            var badge = UiKit.Panel(button.transform, "PriceBadge", ReadyBadge);
+            badge.raycastTarget = false;
+            badge.rectTransform.At(anchor, anchor, new Vector2(98f, -4f), new Vector2(244f, 28f));
+            var status = UiKit.Label(badge.transform, "Status", "", 16, UiKit.Ink, TextAnchor.MiddleLeft, FontStyle.Bold);
+            status.rectTransform.Stretch(8f);
+            var detail = UiKit.Label(button.transform, "Info", "", 14, DetailInk, TextAnchor.MiddleLeft);
+            detail.rectTransform.At(anchor, anchor, new Vector2(98f, -34f), new Vector2(244f, 22f));
+            return new ShopCard { Button = button, Background = button.image, Badge = badge,
+                Count = count, Detail = detail, Status = status, Id = id };
         }
 
         void Update()
@@ -249,7 +277,10 @@ namespace CatGame
             if (_rocketButton != null)
             {
                 _rocketButton.interactable=!state.rocketPurchased && state.catHair>=EndingRules.RocketPrice;
-                _rocketText.text=state.rocketPurchased ? "火箭 · 已出发\n感谢你和猫猫的陪伴" : "火箭 · 一次性\n价格 "+FormatNumber(EndingRules.RocketPrice)+"\n购买后进入结局";
+                double fraction = Math.Min(1.0, state.catHair / EndingRules.RocketPrice);
+                _rocketText.text = state.rocketPurchased ? "火箭 · 已出发\n感谢你和猫猫的陪伴" :
+                    "火箭 · 一次性\n价格 " + FormatNumber(EndingRules.RocketPrice) +
+                    "\n筹备 " + (fraction > 0 && fraction < .0001 ? "<0.01%" : fraction.ToString("0.##%"));
             }
         }
 
@@ -277,24 +308,33 @@ namespace CatGame
             }
         }
 
-        void RefreshCatCard(CatCard card, GameState state)
+        void RefreshCatCard(ShopCard card, GameState state)
         {
-            var definition = FindCatDefinition(card.id);
-            int owned = FindCatCount(state, card.id);
-            double price = IdleMath.CatPrice(card.id, owned);
-            card.button.interactable = owned < definition.maxOwned && price <= state.catHair;
-            string status = owned >= definition.maxOwned ? "已住满 40/40" : "价格 " + FormatNumber(price);
-            card.text.text = definition.name + "  " + owned + "/40\n" + status + "\n" + FormatNumber(definition.income) + "/秒";
+            var definition = FindCatDefinition(card.Id);
+            int owned = FindCatCount(state, card.Id);
+            double price = IdleMath.CatPrice(card.Id, owned);
+            card.Count.text = owned + "/" + definition.maxOwned;
+            card.Detail.text = FormatNumber(definition.income) + " 猫毛/秒";
+            SetShopCardState(card, owned >= definition.maxOwned, price, state.catHair, "已住满");
         }
 
-        void RefreshItemCard(ItemCard card, GameState state)
+        void RefreshItemCard(ShopCard card, GameState state)
         {
-            var definition = FindItemDefinition(card.id);
-            int level = FindItemLevel(state, card.id);
-            double price = IdleMath.ItemPrice(card.id, level);
-            card.button.interactable = level < ItemCatalog.LevelsPerItem && price <= state.catHair;
-            string status = level >= ItemCatalog.LevelsPerItem ? "已满级" : "价格 " + FormatNumber(price);
-            card.text.text = definition.name + "  Lv." + level + "/5\n" + status + "\n" + (definition.click ? "点击加成" : "产量加成");
+            var definition = FindItemDefinition(card.Id);
+            int level = FindItemLevel(state, card.Id);
+            double price = IdleMath.ItemPrice(card.Id, level);
+            card.Count.text = "Lv." + level + "/" + ItemCatalog.LevelsPerItem;
+            card.Detail.text = definition.click ? "点击加成" : "产量加成";
+            SetShopCardState(card, level >= ItemCatalog.LevelsPerItem, price, state.catHair, "已满级");
+        }
+
+        static void SetShopCardState(ShopCard card, bool full, double price, double balance, string fullLabel)
+        {
+            bool affordable = !full && price <= balance;
+            card.Button.interactable = affordable;
+            card.Background.color = full ? FullPaper : affordable ? ReadyPaper : ShortPaper;
+            card.Badge.color = full ? FullBadge : affordable ? ReadyBadge : ShortBadge;
+            card.Status.text = full ? fullLabel : (affordable ? "购买  " : "猫毛不足  ") + FormatNumber(price);
         }
 
         void OnDestroy()
@@ -328,6 +368,8 @@ namespace CatGame
             if (double.IsInfinity(value)) return "∞";
             int mode = GlobalSettings.NumberFormat;
             double magnitude = Math.Abs(value);
+            // K/M/B mode has no larger suffix. Preserve a compact value on the HUD.
+            if (magnitude >= 1e12) return value.ToString("0.##e+0");
             if (mode == 1 && magnitude >= 1000000000.0) return (value / 1000000000.0).ToString("0.##") + "B";
             if (mode == 1 && magnitude >= 1000000.0) return (value / 1000000.0).ToString("0.##") + "M";
             if (mode == 1 && magnitude >= 1000.0) return (value / 1000.0).ToString("0.##") + "K";

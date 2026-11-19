@@ -18,6 +18,8 @@ namespace CatGame
         GameState _state;
         int _index=-1;
         GameObject _furniture, _veil;
+        SpriteRenderer _launchLights;
+        int _launchLightsCount;
         ModalGate _ownedGate;
         Coroutine _transition;
         string _failedId;
@@ -34,6 +36,7 @@ namespace CatGame
         void LateUpdate()
         {
             if(_world==null || _state==null || IsTransitioning || _world.Hud==null)return;
+            RefreshLaunchLights();
             int next=Settings.Resolve(_state.totalEarned);
             if(next<=_index || Settings.Themes[next].Id==_failedId)return;
             var gate=_world.Hud.Modals;
@@ -85,16 +88,18 @@ namespace CatGame
             var sprites=new Sprite[layout.placements.Length];
             for(int i=0;i<sprites.Length;i++)
             {
-                sprites[i]=Resources.Load<Sprite>(definition.ResourceRoot+"/"+layout.placements[i].asset);
-                if(sprites[i]==null || sprites[i].rect.size!=new Vector2(layout.cell,layout.cell) ||
+                var placement=layout.placements[i];
+                sprites[i]=Resources.Load<Sprite>(definition.ResourceRoot+"/"+placement.asset);
+                if(sprites[i]==null || sprites[i].rect.size!=(Vector2)placement.PixelSize(layout.cell) ||
                    sprites[i].pixelsPerUnit!=background.pixelsPerUnit)
-                    throw new InvalidOperationException("Missing or invalid room prop "+layout.placements[i].asset);
+                    throw new InvalidOperationException("Missing or invalid room prop "+placement.asset);
             }
             var parent=new GameObject("BackWallFurniture");parent.SetActive(false);
             parent.transform.SetParent(surface.Background.transform,false);
             var groups=new Dictionary<string,Transform>();
             var pieces=new Dictionary<string,List<SpriteRenderer>>();
             float ppu=background.pixelsPerUnit;
+            SpriteRenderer launchLights = null;
             for(int i=0;i<sprites.Length;i++)
             {
                 var placement=layout.placements[i];
@@ -111,10 +116,18 @@ namespace CatGame
                     }
                 }
                 var piece=new GameObject(placement.asset);piece.transform.SetParent(group,false);
-                piece.transform.localPosition=new Vector3((placement.x+layout.cell*.5f-layout.width*.5f)/ppu,
-                    (layout.height*.5f-placement.y-layout.cell*.5f)/ppu,0);
+                var size=placement.PixelSize(layout.cell);
+                piece.transform.localPosition=new Vector3((placement.x+size.x*.5f-layout.width*.5f)/ppu,
+                    (layout.height*.5f-placement.y-size.y*.5f)/ppu,0);
                 var renderer=piece.AddComponent<SpriteRenderer>();renderer.sprite=sprites[i];renderer.sortingOrder=-50;
                 pieces[placement.group].Add(renderer);
+                if (definition.Id == "companions" && placement.asset == "window")
+                {
+                    var lights = new GameObject("LaunchWindowLights").transform;
+                    lights.SetParent(piece.transform, false);
+                    launchLights = lights.gameObject.AddComponent<SpriteRenderer>();
+                    launchLights.sortingOrder = renderer.sortingOrder + 1;
+                }
             }
             foreach(var group in groups)
             {
@@ -129,7 +142,20 @@ namespace CatGame
             for(int i=0;i<obstacles.Length;i++)obstacles[i]=layout.obstacles[i].ToRect();
             surface.Obstacles=obstacles;
             parent.SetActive(true);_furniture=parent;_index=index;ChangeCount++;
+            _launchLights = launchLights;
+            _launchLightsCount = -1;
+            RefreshLaunchLights();
             if(_world.Roster!=null)_world.Roster.RevalidateRoom();
+        }
+
+        void RefreshLaunchLights()
+        {
+            if (_launchLights == null) return;
+            int count = EndingRules.PreparationLightCount(_state.totalEarned);
+            if (count == _launchLightsCount) return;
+            _launchLights.sprite = count == 0 ? null :
+                Resources.Load<Sprite>(Settings.Themes[_index].ResourceRoot + "/window_lights_" + count);
+            _launchLightsCount = count;
         }
 
         public static void ValidateLayout(RoomThemeLayout layout)
@@ -139,8 +165,14 @@ namespace CatGame
                layout.placements==null || layout.obstacles==null)
                 throw new InvalidOperationException("Theme floor geometry must match the authored room");
             foreach(var p in layout.placements)
+            {
                 if(p==null || string.IsNullOrEmpty(p.asset) || string.IsNullOrEmpty(p.group))
                     throw new InvalidOperationException("Invalid theme placement");
+                var size=p.PixelSize(layout.cell);
+                if(size.x<=0 || size.y<=0 || size.x>layout.width || size.y>layout.height ||
+                   size.x%layout.cell!=0 || size.y%layout.cell!=0)
+                    throw new InvalidOperationException("Invalid room prop pixel size: "+p.asset);
+            }
             foreach(var r in layout.obstacles)
                 if(r==null || r.width<=0 || r.height<=0 || r.x<0 || r.y<0 ||
                    r.x+r.width>512 || r.y+r.height>288 || r.ToRect().Contains(new Vector2(315,151)))

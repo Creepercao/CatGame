@@ -15,8 +15,13 @@ namespace CatGame
         public void Focus(RectTransform row)
         {
             Canvas.ForceUpdateCanvases(); StopMovement();
+            content.anchoredPosition=new Vector2(0,FocusOffset(row));
+        }
+
+        public float FocusOffset(RectTransform row)
+        {
             float top=-row.anchoredPosition.y-(1-row.pivot.y)*row.rect.height;
-            content.anchoredPosition=new Vector2(0,Mathf.Clamp(top-12,0,Mathf.Max(0,content.rect.height-viewport.rect.height)));
+            return Mathf.Clamp(top-12,0,Mathf.Max(0,content.rect.height-viewport.rect.height));
         }
     }
 }

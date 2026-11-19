@@ -15,6 +15,7 @@ namespace CatGame
         public Sprite[] Jump;
         public Sprite[] Sleep;
         public Sprite[] Eat;
+        public Sprite[] Scratch;
         public Sprite[] Attack;
         // New complete animation sets may opt into Walk during automatic roaming.
         public bool UseWalkWhileMoving;
@@ -33,6 +34,7 @@ namespace CatGame
                 case ActionNames.Jump: return Jump;
                 case ActionNames.Sleep: return Sleep;
                 case ActionNames.Eat: return Eat;
+                case ActionNames.Scratch: return Scratch;
                 case ActionNames.Attack: return Attack;
                 default: return null;
             }
@@ -48,6 +50,7 @@ namespace CatGame
         public const string Jump = "jump";
         public const string Sleep = "sleep";
         public const string Eat = "eat";
+        public const string Scratch = "scratch";
         public const string Attack = "attack";
 
         public static readonly string[] All = { Idle, Walk, Run, Jump, Sleep, Eat, Attack };

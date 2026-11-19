@@ -63,6 +63,11 @@ namespace CatGame
         public string asset, group;
         public float x,y,groundX,groundY;
         public bool wallDecor;
+        // Zero preserves existing one-cell layouts. Larger furniture uses one continuous sprite.
+        public int pixelWidth, pixelHeight;
+
+        public Vector2Int PixelSize(int cell) => new Vector2Int(
+            pixelWidth == 0 ? cell : pixelWidth, pixelHeight == 0 ? cell : pixelHeight);
     }
     [Serializable] public sealed class RoomThemeObstacle
     {

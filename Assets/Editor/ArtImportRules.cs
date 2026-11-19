@@ -90,9 +90,37 @@ namespace CatGame.EditorTools
                 SetPixelPlatform(imp, "Android");
                 SetPixelPlatform(imp, "WebGL");
             }
+            if (assetPath.StartsWith(ArtRoot + "Story/"))
+                SetStoryAndroidPlatform(imp, TextureImporterFormat.ETC2_RGBA8);
 
             // 认领：写下标记，以后再导入就跳过，手调设置不会被规则覆盖
             imp.userData = "catgame-import-rules-v2";
+        }
+
+        [MenuItem("CatGame/Art/Apply Android CG Compression")]
+        public static void ApplyStoryAndroidCompression()
+        {
+            foreach (string guid in AssetDatabase.FindAssets("t:Texture2D", new[] { ArtRoot + "Story" }))
+            {
+                string path = AssetDatabase.GUIDToAssetPath(guid);
+                if (!(AssetImporter.GetAtPath(path) is TextureImporter importer) || importer.userData == "manual")
+                    continue;
+                SetStoryAndroidPlatform(importer, importer.DoesSourceTextureHaveAlpha()
+                    ? TextureImporterFormat.ETC2_RGBA8 : TextureImporterFormat.ETC2_RGB4);
+                importer.SaveAndReimport();
+            }
+        }
+
+        static void SetStoryAndroidPlatform(TextureImporter importer, TextureImporterFormat format)
+        {
+            var android = importer.GetPlatformTextureSettings("Android");
+            android.overridden = true;
+            android.maxTextureSize = 2048;
+            android.format = format;
+            android.textureCompression = TextureImporterCompression.CompressedHQ;
+            android.compressionQuality = 100;
+            android.crunchedCompression = false;
+            importer.SetPlatformTextureSettings(android);
         }
 
         public static void SetPixelPlatform(TextureImporter imp, string platform)

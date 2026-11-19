@@ -36,13 +36,13 @@ namespace CatGame
             artFrame.offsetMin = Vector2.zero; artFrame.offsetMax = Vector2.zero;
             artFrame.gameObject.AddComponent<RectMask2D>();
             var art = UiKit.Node("CG", artFrame).Stretch().gameObject.AddComponent<Image>();
-            art.sprite = Resources.Load<Sprite>("Art/Story/MenuMomo_v1");
+            art.sprite = Resources.Load<Sprite>("Art/Story/MenuMomo_v2");
             art.raycastTarget = false;
             art.rectTransform.pivot = new Vector2(.20f,.5f);
             var fit = art.gameObject.AddComponent<AspectRatioFitter>();
             fit.aspectMode = AspectRatioFitter.AspectMode.EnvelopeParent;
             fit.aspectRatio = art.sprite.rect.width / art.sprite.rect.height;
-            var panel = UiKit.Panel(root, "Panel", new Color(1f, 1f, 1f, 0.86f));
+            var panel = UiKit.Panel(root, "Panel", new Color32(255, 251, 244, 255));
             panel.rectTransform.anchorMin = new Vector2(.65f,.5f);
             panel.rectTransform.anchorMax = new Vector2(1,.5f);
             panel.rectTransform.pivot = new Vector2(.5f,.5f);
@@ -53,6 +53,9 @@ namespace CatGame
             title.rectTransform.At(new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, -34f), new Vector2(500f, 100f));
             var sub = UiKit.Label(panel.transform, "Sub", "和猫待一会儿", 24, UiKit.InkSoft, TextAnchor.MiddleCenter);
             sub.rectTransform.At(new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, -124f), new Vector2(480f, 38f));
+            var rule = UiKit.Panel(panel.transform, "TitleRule", new Color32(179, 196, 168, 255), false);
+            rule.raycastTarget = false;
+            rule.rectTransform.At(new Vector2(.5f, 1f), new Vector2(.5f, 1f), new Vector2(0f, -179f), new Vector2(68f, 3f));
 
             _continueButton = AddButton(panel.transform, "Btn_Continue", "继续游戏", -208f, UiKit.Coral, UiKit.Cream, ContinueGame);
             AddButton(panel.transform, "Btn_NewGame", "新游戏", -310f, UiKit.Mint, UiKit.Cream, RequestNewGame);

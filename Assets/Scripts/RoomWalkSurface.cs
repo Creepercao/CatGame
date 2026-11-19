@@ -6,6 +6,7 @@ namespace CatGame
     public sealed class RoomWalkSurface : MonoBehaviour
     {
         public SpriteRenderer Background;
+        internal PlatformGrid Platform { get; set; }
         // Furniture ground footprints, not their upright silhouettes.
         public Rect[] Obstacles = {
             new Rect(118, 110, 52, 15), new Rect(204, 56, 25, 13),

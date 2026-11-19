@@ -40,7 +40,16 @@ namespace CatGame
 
         void LateUpdate()
         {
-            if (_viewWidth != Screen.width || _viewHeight != Screen.height) FitWindow(Screen.width, Screen.height);
+            bool resized = _viewWidth != Screen.width || _viewHeight != Screen.height;
+            if (resized) FitWindow(Screen.width, Screen.height);
+            if (WalkSurface == null || Platform == null || Hud == null) return;
+            var camera = Camera.main;
+            if (camera == null) return;
+            float sidebarRight = Hud.SidebarScreenRight;
+            if (sidebarRight <= 0 || sidebarRight >= Screen.width) return;
+            float visibleLeft = camera.ScreenToWorldPoint(new Vector3(sidebarRight, 0f, -camera.transform.position.z)).x;
+            bool itemsMoved = Platform.KeepItemsVisible(visibleLeft);
+            if (itemsMoved || resized) Roster.RevalidateRoom();
         }
 
         void FitWindow(int width, int height)
@@ -92,7 +101,7 @@ namespace CatGame
                 if (ShowPlatform)
                 {
                     Platform = gameObject.AddComponent<PlatformGrid>();
-                    Platform.Initialize(FloorCenter + WorldArtSettings.Current.ItemGridOffset, FloorHalf, Economy);
+                    Platform.Initialize(FloorCenter + WorldArtSettings.Current.ItemGridOffset, FloorHalf, Economy, WalkSurface);
                 }
                 var currentId = CatGame.I != null && CatGame.I.Current != null ? CatGame.I.Current.Id : "Milk";
                 Cat = Roster.FindActor(currentId);

@@ -13,7 +13,9 @@
       "group": "Bookshelf",
       "groundX": 144,
       "groundY": 125,
-      "wallDecor": false
+      "wallDecor": false,
+      "pixelWidth": 64,
+      "pixelHeight": 64
     },
     {
       "asset": "bookshelf_lower",
@@ -22,7 +24,9 @@
       "group": "Bookshelf",
       "groundX": 144,
       "groundY": 125,
-      "wallDecor": false
+      "wallDecor": false,
+      "pixelWidth": 64,
+      "pixelHeight": 64
     },
     {
       "asset": "window",
@@ -31,7 +35,9 @@
       "group": "Window",
       "groundX": 0,
       "groundY": 0,
-      "wallDecor": true
+      "wallDecor": true,
+      "pixelWidth": 64,
+      "pixelHeight": 64
     },
     {
       "asset": "plant",
@@ -40,70 +46,53 @@
       "group": "Plant",
       "groundX": 288,
       "groundY": 68,
-      "wallDecor": false
+      "wallDecor": false,
+      "pixelWidth": 64,
+      "pixelHeight": 64
     },
     {
-      "asset": "paw_picture_0_0",
+      "asset": "paw_picture",
       "x": 212,
       "y": -2,
       "group": "PawPicture",
       "groundX": 0,
       "groundY": 0,
-      "wallDecor": true
+      "wallDecor": true,
+      "pixelWidth": 64,
+      "pixelHeight": 64
     },
     {
-      "asset": "sofa_0_0",
-      "x": 160,
-      "y": 34,
+      "asset": "sofa",
+      "x": 188,
+      "y": 36,
       "group": "Sofa",
-      "groundX": 220,
-      "groundY": 94,
-      "wallDecor": false
+      "groundX": 248,
+      "groundY": 96,
+      "wallDecor": false,
+      "pixelWidth": 128,
+      "pixelHeight": 64
     },
     {
-      "asset": "double_bed_0_0",
-      "x": 272,
-      "y": 35,
+      "asset": "double_bed",
+      "x": 297,
+      "y": 42,
       "group": "Bed",
-      "groundX": 336,
-      "groundY": 94,
-      "wallDecor": false
+      "groundX": 361,
+      "groundY": 101,
+      "wallDecor": false,
+      "pixelWidth": 128,
+      "pixelHeight": 64
     },
     {
-      "asset": "sofa_1_0",
-      "x": 224,
-      "y": 34,
-      "group": "Sofa",
-      "groundX": 220,
-      "groundY": 94,
-      "wallDecor": false
-    },
-    {
-      "asset": "double_bed_1_0",
-      "x": 336,
-      "y": 35,
-      "group": "Bed",
-      "groundX": 336,
-      "groundY": 94,
-      "wallDecor": false
-    },
-    {
-      "asset": "cat_tree_0_0",
-      "x": 452,
-      "y": 8,
+      "asset": "cat_tree",
+      "x": 392,
+      "y": -10,
       "group": "CatTree",
-      "groundX": 484,
-      "groundY": 132,
-      "wallDecor": false
-    },
-    {
-      "asset": "cat_tree_0_1",
-      "x": 452,
-      "y": 72,
-      "group": "CatTree",
-      "groundX": 484,
-      "groundY": 132,
-      "wallDecor": false
+      "groundX": 424,
+      "groundY": 113,
+      "wallDecor": false,
+      "pixelWidth": 64,
+      "pixelHeight": 128
     }
   ],
   "obstacles": [
@@ -120,22 +109,22 @@
       "height": 10
     },
     {
-      "x": 170,
-      "y": 86,
+      "x": 198,
+      "y": 88,
       "width": 104,
       "height": 10
     },
     {
-      "x": 287,
-      "y": 87,
+      "x": 312,
+      "y": 94,
       "width": 98,
       "height": 10
     },
     {
-      "x": 458,
-      "y": 124,
-      "width": 52,
-      "height": 12
+      "x": 402,
+      "y": 105,
+      "width": 42,
+      "height": 9
     }
   ]
 }

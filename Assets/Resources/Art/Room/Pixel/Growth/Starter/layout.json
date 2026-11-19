@@ -13,7 +13,9 @@
       "group": "Bookshelf",
       "groundX": 144,
       "groundY": 125,
-      "wallDecor": false
+      "wallDecor": false,
+      "pixelWidth": 64,
+      "pixelHeight": 64
     },
     {
       "asset": "bookshelf_lower",
@@ -22,7 +24,9 @@
       "group": "Bookshelf",
       "groundX": 144,
       "groundY": 125,
-      "wallDecor": false
+      "wallDecor": false,
+      "pixelWidth": 64,
+      "pixelHeight": 64
     },
     {
       "asset": "window",
@@ -31,7 +35,9 @@
       "group": "Window",
       "groundX": 0,
       "groundY": 0,
-      "wallDecor": true
+      "wallDecor": true,
+      "pixelWidth": 64,
+      "pixelHeight": 64
     },
     {
       "asset": "plant",
@@ -40,7 +46,9 @@
       "group": "Plant",
       "groundX": 216,
       "groundY": 68,
-      "wallDecor": false
+      "wallDecor": false,
+      "pixelWidth": 64,
+      "pixelHeight": 64
     },
     {
       "asset": "cat_bed",
@@ -49,7 +57,9 @@
       "group": "Bed",
       "groundX": 284,
       "groundY": 70,
-      "wallDecor": false
+      "wallDecor": false,
+      "pixelWidth": 64,
+      "pixelHeight": 64
     },
     {
       "asset": "scratching_post",
@@ -58,7 +68,9 @@
       "group": "CatTree",
       "groundX": 484,
       "groundY": 126,
-      "wallDecor": false
+      "wallDecor": false,
+      "pixelWidth": 64,
+      "pixelHeight": 64
     }
   ],
   "obstacles": [

@@ -132,6 +132,7 @@ namespace CatGame
         void BuildCatalog(Transform parent)
         {
             var page = CreatePage(parent, "Catalog", Resources.Load<Sprite>("Art/Backgrounds/Pixel/CatalogPark"));
+            page.Find("Background").GetComponent<Image>().color = new Color(1f, 1f, 1f, .36f);
             AddHeading(page.transform, "猫咪图鉴", "CatalogHeading");
             var viewport = UiKit.Node("Entries", page.transform).At(new Vector2(0f, 0f), new Vector2(0f, 0f), new Vector2(14f, 10f), new Vector2(610f, 468f));
             var maskImage = viewport.gameObject.AddComponent<Image>();
@@ -165,15 +166,18 @@ namespace CatGame
             {
                 int owned = CountCats(cat.id);
                 bool unlocked = owned > 0;
-                string status = unlocked ? "已解锁" : "可购买 · 首价 " + Hud.FormatNumber(cat.firstPrice);
-                var row = UiKit.Panel(content, "CatEntry_" + cat.id, unlocked ? UiKit.PanelC : UiKit.PanelDark);
+                string status = unlocked ? "拥有 " + owned + "/" + cat.maxOwned : "首价 " + Hud.FormatNumber(cat.firstPrice);
+                var row = UiKit.Panel(content, "CatEntry_" + cat.id,
+                    unlocked ? new Color32(223, 235, 220, 255) : UiKit.Cream);
                 row.rectTransform.sizeDelta = new Vector2(600f, 70f);
-                var portrait = UiKit.Node("Portrait", row.transform).At(new Vector2(0f, 0.5f), new Vector2(0f, 0.5f), new Vector2(8f, 0f), new Vector2(58f, 58f)).gameObject.AddComponent<Image>();
+                var portrait = UiKit.Node("Portrait", row.transform).At(new Vector2(0f, 0.5f), new Vector2(0f, 0.5f), new Vector2(10f, 0f), new Vector2(66f, 66f)).gameObject.AddComponent<Image>();
                 portrait.sprite = CatVisualLibrary.Load(cat).Portrait;
                 portrait.preserveAspect = true;
-                if (!unlocked) portrait.color = new Color(0.35f, 0.35f, 0.35f, 0.75f);
-                var text = UiKit.Label(row.transform, "Details", cat.name + "\n" + status + " · 拥有 " + owned + "/" + cat.maxOwned + " · " + Hud.FormatNumber(cat.income) + "/秒", 15, UiKit.Ink, TextAnchor.MiddleLeft, FontStyle.Bold);
-                text.rectTransform.At(new Vector2(0f, 0.5f), new Vector2(0f, 0.5f), new Vector2(80f, 0f), new Vector2(500f, 60f));
+                portrait.raycastTarget = false;
+                var name = UiKit.Label(row.transform, "Name", cat.name, 22, UiKit.Ink, TextAnchor.MiddleLeft, FontStyle.Bold);
+                name.rectTransform.At(new Vector2(0f,.5f), new Vector2(0f,.5f), new Vector2(92f,14f), new Vector2(280f,32f));
+                var text = UiKit.Label(row.transform, "Details", status + " · " + Hud.FormatNumber(cat.income) + " 猫毛/秒", 17, UiKit.Ink, TextAnchor.MiddleLeft);
+                text.rectTransform.At(new Vector2(0f,.5f), new Vector2(0f,.5f), new Vector2(92f,-15f), new Vector2(460f,28f));
                 CatalogEntryCount++;
             }
         }
